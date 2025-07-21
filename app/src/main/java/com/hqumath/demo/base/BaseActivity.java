@@ -30,6 +30,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         initListener();
         //初始化数据
         initData();
+        //页面事件监听的方法，一般用于ViewModel层转到View层的事件注册
+        initViewObservable();
     }
 
     /*@Override
@@ -58,6 +60,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected abstract void initListener();
 
     protected abstract void initData();
+
+    protected abstract void initViewObservable();
 
     public void showLoading() {
         if (mProgressDialog == null) {

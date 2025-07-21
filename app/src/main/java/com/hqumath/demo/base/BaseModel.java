@@ -93,7 +93,7 @@ public class BaseModel {
     }
 
     //主动解除所有订阅者
-    protected void dispose() {
+    public void dispose() {
         if(compositeDisposable != null) {
             compositeDisposable.dispose();
             compositeDisposable = null;

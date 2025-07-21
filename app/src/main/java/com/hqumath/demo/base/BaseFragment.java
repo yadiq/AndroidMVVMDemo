@@ -37,6 +37,8 @@ public abstract class BaseFragment extends Fragment {
         initListener();
         //初始化数据
         initData();
+        //页面事件监听的方法，一般用于ViewModel层转到View层的事件注册
+        initViewObservable();
         return rootView;
     }
 
@@ -45,4 +47,6 @@ public abstract class BaseFragment extends Fragment {
     protected abstract void initListener();
 
     protected abstract void initData();
+
+    protected abstract void initViewObservable();
 }

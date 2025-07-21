@@ -16,20 +16,23 @@ import com.hqumath.demo.ui.repos.MyReposActivity
  * ****************************************************************
  */
 class MainActivity : BaseActivity() {
-    private var binding: ActivityMainBinding? = null
+    private lateinit var binding: ActivityMainBinding
 
     override fun initContentView(savedInstanceState: Bundle?): View {
         //enableEdgeToEdge() 启用沉浸式布局
         binding = ActivityMainBinding.inflate(layoutInflater)
-        return binding!!.root
+        return binding.root
     }
 
     override fun initListener() {
-        binding!!.btnMyRepos.setOnClickListener {
+        binding.btnMyRepos.setOnClickListener {
             startActivity(Intent(mContext, MyReposActivity::class.java))
         }
     }
 
     override fun initData() {
+    }
+
+    override fun initViewObservable() {
     }
 }
