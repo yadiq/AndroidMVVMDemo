@@ -5,13 +5,12 @@ plugins {
 
 android {
     namespace = "com.hqumath.demo" //影响R类生成
-    compileSdk = 31
+    compileSdk = 33
 
     defaultConfig {
         applicationId = "com.hqumath.demo" //影响AndroidManifest中package
         minSdk = 21
-        //noinspection ExpiredTargetSdkVersion
-        targetSdk = 31
+        targetSdk = 33
         versionCode = 20210902
         versionName = "2.1"
     }
@@ -35,7 +34,7 @@ android {
     buildFeatures {
         buildConfig = true
         viewBinding = true
-        dataBinding = true
+//        dataBinding = true
     }
 
     //配置自定义打包名称

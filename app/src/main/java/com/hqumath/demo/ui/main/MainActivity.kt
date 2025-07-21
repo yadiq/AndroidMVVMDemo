@@ -18,7 +18,7 @@ import com.hqumath.demo.ui.repos.MyReposActivity
 class MainActivity : BaseActivity() {
     private var binding: ActivityMainBinding? = null
 
-    override fun initContentView(savedInstanceState: Bundle): View {
+    override fun initContentView(savedInstanceState: Bundle?): View {
         //enableEdgeToEdge() 启用沉浸式布局
         binding = ActivityMainBinding.inflate(layoutInflater)
         return binding!!.root
