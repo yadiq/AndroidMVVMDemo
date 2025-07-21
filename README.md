@@ -1,5 +1,6 @@
-# AndroidMVPDemo
-AndroidMVP的精简版本，快速开发框架
+# AndroidMVVMDemo
+AndroidMVVM的精简版本，快速开发框架
+使用MVVM框架+Kotlin语言
 
 ## 图标
 1. mipmap文件夹只存放启动图标icon
