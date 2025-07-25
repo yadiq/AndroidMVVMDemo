@@ -14,7 +14,11 @@ android {
         versionCode = 20210902
         versionName = "2.1"
     }
-
+    buildFeatures {
+        buildConfig = true
+        viewBinding = true
+        //dataBinding = true
+    }
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -31,12 +35,6 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-    buildFeatures {
-        buildConfig = true
-        viewBinding = true
-//        dataBinding = true
-    }
-
     //配置自定义打包名称
     applicationVariants.configureEach {
         outputs.configureEach {
