@@ -1,12 +1,15 @@
 package com.hqumath.demo.ui.repos
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.hqumath.demo.bean.ReposEntity
 import com.hqumath.demo.net.HttpListener
 import com.hqumath.demo.repository.MyModel
 
-class MyReposViewModel : ViewModel() {
+class MyReposViewModel(application: Application) : AndroidViewModel(application) {
+
     private var mModel: MyModel? = null
 
     private var myReposPageIndex: Long = 0 //索引
