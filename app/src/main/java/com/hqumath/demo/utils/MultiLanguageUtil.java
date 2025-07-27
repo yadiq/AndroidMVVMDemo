@@ -7,6 +7,8 @@ import android.os.Build;
 import android.os.LocaleList;
 import android.util.DisplayMetrics;
 
+import com.hqumath.demo.app.SPKey;
+
 import java.util.Locale;
 
 /**
@@ -26,7 +28,7 @@ public class MultiLanguageUtil {
      * @return
      */
     public static Locale getLanguageLocale(Context context) {
-        int languageType = SPUtil.getInstance(context).getInt(Constant.LANGUAGE, LANGUAGE_EN);
+        int languageType = SPUtil.getInstance(context).getInt(SPKey.LANGUAGE, LANGUAGE_EN);
         Locale locale = Locale.ENGLISH;
         if (languageType == LANGUAGE_EN) {
             locale = Locale.ENGLISH;
@@ -45,7 +47,7 @@ public class MultiLanguageUtil {
      * @param languageType
      */
     public static void updateLanguage(Context context, int languageType) {
-        SPUtil.getInstance(context).put(Constant.LANGUAGE, languageType);
+        SPUtil.getInstance(context).put(SPKey.LANGUAGE, languageType);
         //更新系统资源配置
         updateConfiguration(context.getApplicationContext());
     }
