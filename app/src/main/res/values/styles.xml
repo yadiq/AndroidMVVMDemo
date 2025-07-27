@@ -9,12 +9,6 @@
 
         <item name="textAllCaps">false</item><!--Button字母非大写-->
         <item name="android:windowAnimationStyle">@style/TranAnimation</item><!--切换动画-->
-        <item name="icon_color">@color/light_teal_icon_color</item><!--自定义图标颜色-->
-
-        <!--TabLayout样式-->
-        <item name="tabBackground">@color/colorAccent</item>
-        <item name="tabTextColor">#80ffffff</item>
-        <item name="tabSelectedTextColor">@color/white</item>
     </style>
 
     <!--弹窗主题-->
