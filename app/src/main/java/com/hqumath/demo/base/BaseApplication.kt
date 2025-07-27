@@ -3,7 +3,7 @@ package com.hqumath.demo.base
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
-import com.hqumath.demo.app.AppManager
+import com.hqumath.demo.app.ActivityManager
 import com.hqumath.demo.utils.CommonUtil
 import me.jessyan.autosize.AutoSizeConfig
 import me.jessyan.autosize.onAdaptListener
@@ -52,7 +52,7 @@ class BaseApplication  : Application() {
     private val activityLifecycleCallbacks = object : ActivityLifecycleCallbacks {
         override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
             //注册监听每个activity的生命周期,便于堆栈式管理
-            AppManager.getInstance().addActivity(activity)
+            ActivityManager.addActivity(activity)
         }
 
         override fun onActivityStarted(activity: Activity) {
@@ -71,7 +71,7 @@ class BaseApplication  : Application() {
         }
 
         override fun onActivityDestroyed(activity: Activity) {
-            AppManager.getInstance().removeActivity(activity)
+            ActivityManager.removeActivity(activity)
         }
     }
 }

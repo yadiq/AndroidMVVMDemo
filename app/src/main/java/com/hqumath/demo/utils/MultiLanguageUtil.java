@@ -7,8 +7,6 @@ import android.os.Build;
 import android.os.LocaleList;
 import android.util.DisplayMetrics;
 
-import com.hqumath.demo.app.Constant;
-
 import java.util.Locale;
 
 /**
