@@ -70,4 +70,9 @@ dependencies {
     //下拉刷新
     implementation("io.github.scwang90:refresh-layout-kernel:3.0.0-alpha") //核心必须依赖
     implementation("io.github.scwang90:refresh-header-classics:3.0.0-alpha") //经典刷新头
+    //app升级
+    implementation("com.github.jenly1314.AppUpdater:app-updater:1.2.0")
+    implementation("com.github.jenly1314.AppUpdater:app-dialog:1.2.0")
+
+
 }
