@@ -8,7 +8,7 @@ package com.hqumath.demo.app
  * 注意事项:
  * ****************************************************************
  */
-class SPKey {
+class DataStoreKey {
     companion object {
         const val USER_NAME: String = "USER_NAME" //用户名
         const val TOKEN: String = "TOKEN"

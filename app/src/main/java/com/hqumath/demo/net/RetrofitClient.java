@@ -1,6 +1,6 @@
 package com.hqumath.demo.net;
 
-import com.hqumath.demo.app.Config;
+import com.hqumath.demo.app.Constant;
 import com.hqumath.demo.net.download.DownloadInterceptor;
 import com.hqumath.demo.net.download.DownloadListener;
 import com.hqumath.demo.utils.SSLSocketClient;
@@ -66,7 +66,7 @@ public class RetrofitClient {
                     .addConverterFactory(GsonConverterFactory.create())//返回数据转换器-Gson
                     //.addConverterFactory(ScalarsConverterFactory.create())//返回数据转换器-String
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                    .baseUrl(Config.BASE_URL)
+                    .baseUrl(Constant.BASE_URL)
                     .build();
             apiService = retrofit.create(ApiService.class);
         }
@@ -85,7 +85,7 @@ public class RetrofitClient {
                 .client(builder.build())
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .baseUrl(Config.BASE_URL)//使用哪个域名都可以
+                .baseUrl(Constant.BASE_URL)//使用哪个域名都可以
                 .build();
         return retrofit.create(ApiService.class);
     }
