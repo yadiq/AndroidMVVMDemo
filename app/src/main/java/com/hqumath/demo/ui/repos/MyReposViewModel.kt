@@ -3,9 +3,7 @@ package com.hqumath.demo.ui.repos
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.hqumath.demo.bean.ReposEntity
-import com.hqumath.demo.net.HttpListener
 import com.hqumath.demo.repository.MyModel
 
 class MyReposViewModel(application: Application) : AndroidViewModel(application) {
@@ -43,9 +41,12 @@ class MyReposViewModel(application: Application) : AndroidViewModel(application)
             myReposPageIndex = 1
         }
         val userName = "yadiq"
-        mModel?.getMyRepos(userName, pageSize, myReposPageIndex, object : HttpListener {
-            override fun onSuccess(`object`: Any) {
-                val list = `object` as List<ReposEntity>
+        mModel?.getMyRepos(
+            userName,
+            pageSize,
+            myReposPageIndex,
+            { response ->
+                val list = response as List<ReposEntity>
                 myReposPageIndex++ //偏移量+1
                 if (isRefresh)  //下拉覆盖，上拉增量
                     myReposData.clear()
@@ -55,13 +56,12 @@ class MyReposViewModel(application: Application) : AndroidViewModel(application)
                 myReposRefresh = isRefresh //是否下拉
                 myReposNewEmpty = list.isEmpty() //增量是否为空
                 myReposResultCode.postValue("0") //错误码 0成功
-            }
-
-            override fun onError(errorMsg: String, code: String) {
+            },
+            { errorMsg, code ->
                 myReposRefresh = isRefresh //是否下拉
                 myReposResultMsg = errorMsg //错误原因
                 myReposResultCode.postValue(code) //错误码 0成功
             }
-        })
+        )
     }
 }

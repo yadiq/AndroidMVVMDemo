@@ -34,6 +34,14 @@
         "locale" 所在地区发生变化-->
 
         <activity
+            android:name="com.hqumath.demo.ui.login.LoginActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|navigation|keyboard|keyboardHidden|touchscreen|fontScale|locale"
+            android:exported="true"
+            android:screenOrientation="portrait">
+
+        </activity>
+
+        <activity
             android:name="com.hqumath.demo.ui.main.MainActivity"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|navigation|keyboard|keyboardHidden|touchscreen|fontScale|locale"
             android:exported="true"
@@ -44,6 +52,7 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
 
         <activity

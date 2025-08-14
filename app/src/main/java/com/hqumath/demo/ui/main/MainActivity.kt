@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityMainBinding
+import com.hqumath.demo.ui.login.LoginActivity
 import com.hqumath.demo.ui.repos.MyReposActivity
 
 /**
@@ -25,6 +26,9 @@ class MainActivity : BaseActivity() {
     }
 
     override fun initListener() {
+        binding.btnLogin.setOnClickListener {
+            startActivity(Intent(mContext, LoginActivity::class.java))
+        }
         binding.btnMyRepos.setOnClickListener {
             startActivity(Intent(mContext, MyReposActivity::class.java))
         }

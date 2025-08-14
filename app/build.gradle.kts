@@ -17,7 +17,7 @@ android {
     buildFeatures {
         buildConfig = true
         viewBinding = true
-        //dataBinding = true
+        dataBinding = true
     }
     buildTypes {
         release {
@@ -55,7 +55,6 @@ dependencies {
 
     //implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation("androidx.recyclerview:recyclerview:1.2.1")
-    implementation("androidx.cardview:cardview:1.0.0")
     //rxjava
     implementation("io.reactivex.rxjava2:rxjava:2.2.9")
     implementation("io.reactivex.rxjava2:rxandroid:2.1.1")

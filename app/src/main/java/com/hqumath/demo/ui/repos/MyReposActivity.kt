@@ -7,7 +7,7 @@ import com.hqumath.demo.R
 import com.hqumath.demo.adapter.MyRecyclerAdapters
 import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityMyReposBinding
-import com.hqumath.demo.dialog.DialogUtil
+import com.hqumath.demo.dialog.CommonDialog
 import com.hqumath.demo.utils.CommonUtil
 
 /**
@@ -31,7 +31,7 @@ class MyReposActivity : BaseActivity() {
     }
 
     override fun initListener() {
-        binding.titleLayout.tvTitle.setText(R.string.my_repos)
+        binding.titleLayout.tvTitle.setText("我的仓库")
         binding.titleLayout.ivBack.setOnClickListener { finish() }
         binding.refreshLayout.setOnRefreshListener { viewModel.getMyRepos(true) }
         binding.refreshLayout.setOnLoadMoreListener { viewModel.getMyRepos(false) }
@@ -43,10 +43,12 @@ class MyReposActivity : BaseActivity() {
         recyclerAdapter = MyRecyclerAdapters.ReposRecyclerAdapter(mContext, viewModel.myReposData)
         recyclerAdapter?.setOnItemClickListener { _: View?, position: Int ->
             val data = viewModel.myReposData[position]
-            val dialog = DialogUtil(mContext)
-            dialog.setTitle("提示")
-            dialog.setMessage(data.name)
-            dialog.setOneConfirmBtn("确定", null)
+            val dialog = CommonDialog(
+                context = mContext,
+                title = "提示",
+                message = data.name,
+                oneButtonText = "确定"
+            )
             dialog.show()
         }
         binding.recyclerView.adapter = recyclerAdapter

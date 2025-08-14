@@ -1,10 +1,9 @@
 package com.hqumath.demo.base
 
-import android.app.ProgressDialog
-import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.hqumath.demo.dialog.LoadingDialog
 
 /**
  * ****************************************************************
@@ -17,7 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 abstract class BaseActivity : AppCompatActivity() {
 
     lateinit var mContext: BaseActivity
-    var mProgressDialog: ProgressDialog? = null //loading弹窗
+    private var loadingDialog: LoadingDialog? = null
 
     private var isActive = false //是否在前台
 
@@ -45,7 +44,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        dismissLoading()
+        dismissLoadingDialog()
     }
 
     abstract fun initContentView(savedInstanceState: Bundle?): View?
@@ -56,17 +55,15 @@ abstract class BaseActivity : AppCompatActivity() {
 
     abstract fun initViewObservable()
 
-    fun showLoading() {
-        if (mProgressDialog == null) {
-            mProgressDialog = ProgressDialog(mContext)
-            mProgressDialog!!.setMessage("loading")
+    protected fun showLoadingDialog(msg: String? = null) {
+        if (loadingDialog == null) {
+            loadingDialog = LoadingDialog(context = mContext)
         }
-        if (!mProgressDialog!!.isShowing) mProgressDialog!!.show()
+        msg?.let { loadingDialog?.setMessage(it) }
+        loadingDialog?.show()
     }
 
-    fun dismissLoading() {
-        if (mProgressDialog != null) {
-            mProgressDialog!!.dismiss()
-        }
+    protected fun dismissLoadingDialog() {
+        loadingDialog?.dismiss()
     }
 }
