@@ -71,4 +71,6 @@ dependencies {
     //下拉刷新
     implementation("io.github.scwang90:refresh-layout-kernel:3.0.0-alpha") //核心必须依赖
     implementation("io.github.scwang90:refresh-header-classics:3.0.0-alpha") //经典刷新头
+    //异常捕获
+    implementation ("com.iqiyi.xcrash:xcrash-android-lib:3.1.0")
 }
