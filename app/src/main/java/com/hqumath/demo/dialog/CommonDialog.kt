@@ -2,7 +2,6 @@ package com.hqumath.demo.dialog
 
 import android.app.Dialog
 import android.content.Context
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import com.hqumath.demo.R
@@ -20,11 +19,9 @@ class CommonDialog(
     private val oneButtonAction: (() -> Unit)? = null,
 ) : Dialog(context, R.style.dialog_common) {
 
-    private lateinit var binding: DialogCommonBinding
+    private val binding = DialogCommonBinding.inflate(LayoutInflater.from(context))
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = DialogCommonBinding.inflate(LayoutInflater.from(context))
+    init {
         setContentView(binding.root) //根布局会被改为自适应宽高,居中
         //根布局为自适应宽高，有软键盘时必须全屏，否则mate40等手机软键盘无法上推
         /*Window window = getWindow();
