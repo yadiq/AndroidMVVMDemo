@@ -47,6 +47,19 @@ object DataStoreUtil {
         return data as T
     }
 
+    fun clearAllData() {
+        runBlocking {
+            clearData()
+        }
+    }
+
+    /**
+     * 清空所有数据
+     */
+    private suspend fun clearData() {
+        dataStore.edit { it.clear() }
+    }
+
     /**
      * 存Int数据
      */

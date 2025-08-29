@@ -7,6 +7,19 @@ import android.view.View
 import com.hqumath.demo.R
 import com.hqumath.demo.databinding.DialogCommonBinding
 
+/*
+用法
+val dialog = CommonDialog(
+  context = mContext,
+  title = "提示",
+  message = "是否确认退出登录？",
+  positiveText = "确定",
+  positiveAction = {},
+  negativeText = "取消",
+  negativeAction = {}
+            )
+            dialog.show()
+ */
 class CommonDialog(
     private val context: Context,
     private val title: String? = null,

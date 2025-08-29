@@ -55,7 +55,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
     abstract fun initViewObservable()
 
-    protected fun showLoadingDialog(msg: String? = null) {
+    fun showLoadingDialog(msg: String? = null) {
         if (loadingDialog == null) {
             loadingDialog = LoadingDialog(context = mContext)
         }
@@ -63,7 +63,7 @@ abstract class BaseActivity : AppCompatActivity() {
         loadingDialog?.show()
     }
 
-    protected fun dismissLoadingDialog() {
+    fun dismissLoadingDialog() {
         loadingDialog?.dismiss()
     }
 }

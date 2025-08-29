@@ -23,7 +23,15 @@ class MyReposActivity : BaseActivity() {
     private lateinit var viewModel: MyReposViewModel
 
     private var recyclerAdapter: MyRecyclerAdapters.ReposRecyclerAdapter? = null
-    private var hasRequested: Boolean = false //在onResume中判断是否已经请求过数据。用于懒加载
+    private var needRequest: Boolean = true //在onResume中判断，是否需要请求数据
+
+//    companion object {
+//        fun getStartIntent(mContext: Context, id: String): Intent {
+//            val intent = Intent(mContext, PersonSelectActivity::class.java)
+//            intent.putExtra("ID", id)
+//            return intent
+//        }
+//    }
 
     override fun initContentView(savedInstanceState: Bundle?): View {
         binding = ActivityMyReposBinding.inflate(layoutInflater)
@@ -38,11 +46,15 @@ class MyReposActivity : BaseActivity() {
     }
 
     override fun initData() {
-        viewModel = ViewModelProvider(mContext)[MyReposViewModel::class.java]
+        viewModel = ViewModelProvider(this)[MyReposViewModel::class.java]
+        binding.viewModel = viewModel
+        binding.lifecycleOwner = this
 
-        recyclerAdapter = MyRecyclerAdapters.ReposRecyclerAdapter(mContext, viewModel.myReposData)
+        recyclerAdapter = MyRecyclerAdapters.ReposRecyclerAdapter(mContext, viewModel.list)
         recyclerAdapter?.setOnItemClickListener { _: View?, position: Int ->
-            val data = viewModel.myReposData[position]
+            if (viewModel.list.size <= position)
+                return@setOnItemClickListener
+            val data = viewModel.list[position]
             val dialog = CommonDialog(
                 context = mContext,
                 title = "提示",
@@ -55,41 +67,48 @@ class MyReposActivity : BaseActivity() {
     }
 
     override fun initViewObservable() {
+        viewModel.isLoading.observe(this) { b ->
+            if (b) {
+                showLoadingDialog()
+            } else {
+                dismissLoadingDialog()
+            }
+        }
         //网络请求错误号
-        viewModel.myReposResultCode.observe(this) { code: String ->
+        viewModel.listResultCode.observe(this) { code: String ->
             if (code == "0") {
                 recyclerAdapter?.notifyDataSetChanged()
-                if (viewModel.myReposRefresh) {
-                    if (viewModel.myReposNewEmpty) {
+                if (viewModel.listRefresh) {
+                    if (viewModel.listNewEmpty) {
                         binding.refreshLayout.finishRefreshWithNoMoreData() //上拉加载功能将显示没有更多数据
                     } else {
                         binding.refreshLayout.finishRefresh()
                     }
                 } else {
-                    if (viewModel.myReposNewEmpty) {
+                    if (viewModel.listNewEmpty) {
                         binding.refreshLayout.finishLoadMoreWithNoMoreData() //上拉加载功能将显示没有更多数据
                     } else {
                         binding.refreshLayout.finishLoadMore()
                     }
                 }
             } else {
-                CommonUtil.toast(viewModel.myReposResultMsg)
-                if (viewModel.myReposRefresh) {
+                if (viewModel.listRefresh) {
                     binding.refreshLayout.finishRefresh(false) //刷新失败，会影响到上次的更新时间
                 } else {
                     binding.refreshLayout.finishLoadMore(false)
                 }
             }
             binding.emptyLayout.llEmpty.visibility =
-                if (viewModel.myReposData.isEmpty()) View.VISIBLE else View.GONE
+                if (viewModel.list.isEmpty()) View.VISIBLE else View.GONE
         }
     }
 
-    public override fun onResume() {
+    override fun onResume() {
         super.onResume()
-        if (!hasRequested) {
-            hasRequested = true
-            binding.refreshLayout.autoRefresh() //触发自动刷新
+        if (needRequest) {
+            needRequest = false
+            viewModel.isLoading.postValue(true)
+            viewModel.getMyRepos(true)
         }
     }
 }

@@ -18,9 +18,31 @@ import com.hqumath.demo.utils.DataStoreUtil
  * ****************************************************************
  */
 class MyModel : BaseModel() {
+    /////////////////登录界面////////////////
+//    fun login(
+//        body: Map<String, String>,
+//        onSuccess: (response: Any?) -> Unit,
+//        onError: (errorMsg: String, code: String) -> Unit
+//    ) {
+//        sendRequest(
+//            RetrofitClient.getInstance().apiService.login(body),
+//            { response ->
+//                val result = response as BaseResult<LoginBean>
+//                //数据校验、处理
+//                if (result.success) {
+//                    DataStoreUtil.putData(DataStoreKey.USER_NAME, result.data.userInfo.username)
+//                    DataStoreUtil.putData(DataStoreKey.TOKEN, result.data.token)
+//                    onSuccess(response.data)
+//                } else {
+//                    onError(result.msg, result.code)
+//                }
+//            },
+//            onError
+//        )
+//    }
+
     fun login(
         userName: String,
-        passWord: String,
         onSuccess: (response: Any) -> Unit,
         onError: (errorMsg: String, code: String) -> Unit
     ) {

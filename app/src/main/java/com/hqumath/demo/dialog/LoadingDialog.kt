@@ -9,7 +9,7 @@ import com.hqumath.demo.databinding.DialogLoadingBinding
 class LoadingDialog(
     private val context: Context,
     private var message: String? = null
-) : Dialog(context, R.style.dialog_common) {
+) : Dialog(context, R.style.dialog_loading) {
 
     private val binding = DialogLoadingBinding.inflate(LayoutInflater.from(context))
 

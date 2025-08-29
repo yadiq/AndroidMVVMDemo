@@ -12,7 +12,7 @@ import com.hqumath.demo.utils.DataStoreUtil
  */
 class Constant {
     companion object {
-        const val BASE_URL: String = "https://api.github.com/" //API服务器
+        const val BASE_API: String = "https://api.github.com/" //API服务器
 
         //请求通用参数
         fun getBaseMap(): HashMap<String, String> {

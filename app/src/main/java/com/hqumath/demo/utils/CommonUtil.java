@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Looper;
 import android.util.TypedValue;
 import android.view.View;
@@ -91,13 +92,28 @@ public class CommonUtil {
     }
 
     //获取软件版本号
-    public static String getVersion() {
+    public static String getVersionName() {
         try {
             PackageInfo pi = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             return pi.versionName;
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
             return "";
+        }
+    }
+
+    //获取软件版本号
+    public static long getVersionCode() {
+        try {
+            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                return packageInfo.getLongVersionCode();
+            } else {
+                return packageInfo.versionCode;
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+            return 0;
         }
     }
 

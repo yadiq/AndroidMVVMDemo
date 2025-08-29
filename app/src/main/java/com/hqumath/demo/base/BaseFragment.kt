@@ -50,4 +50,14 @@ abstract class BaseFragment : Fragment() {
     protected abstract fun initData()
 
     protected abstract fun initViewObservable()
+
+    protected fun showLoadingDialog(msg: String? = null) {
+        val baseActivity = mContext as? BaseActivity
+        baseActivity?.showLoadingDialog(msg)
+    }
+
+    protected fun dismissLoadingDialog() {
+        val baseActivity = mContext as? BaseActivity
+        baseActivity?.dismissLoadingDialog()
+    }
 }

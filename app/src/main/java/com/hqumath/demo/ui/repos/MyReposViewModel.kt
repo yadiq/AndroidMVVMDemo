@@ -5,17 +5,18 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.hqumath.demo.bean.ReposEntity
 import com.hqumath.demo.repository.MyModel
+import com.hqumath.demo.utils.CommonUtil
 
 class MyReposViewModel(application: Application) : AndroidViewModel(application) {
 
     private var mModel: MyModel? = null
+    var isLoading: MutableLiveData<Boolean> = MutableLiveData() //是否显示进度条
 
-    private var myReposPageIndex: Long = 0 //索引
-    var myReposResultCode: MutableLiveData<String> = MutableLiveData() //网络请求错误号 0成功；other失败
-    var myReposResultMsg: String? = null //错误原因
-    var myReposRefresh: Boolean = false //true 下拉刷新；false 上拉加载
-    var myReposNewEmpty: Boolean = false //true 增量为空；false 增量不为空
-    var myReposData: MutableList<ReposEntity> = ArrayList() //列表数据
+    private var pageIndex: Long = 0 //索引
+    var listResultCode: MutableLiveData<String> = MutableLiveData() //网络请求错误号 0成功；other失败
+    var listRefresh: Boolean = false //true 下拉刷新；false 上拉加载
+    var listNewEmpty: Boolean = false //true 增量为空；false 增量不为空
+    var list: MutableList<ReposEntity> = ArrayList() //列表数据
 
     companion object {
         private const val pageSize = 10 //分页
@@ -38,29 +39,31 @@ class MyReposViewModel(application: Application) : AndroidViewModel(application)
      */
     fun getMyRepos(isRefresh: Boolean) {
         if (isRefresh) {
-            myReposPageIndex = 1
+            pageIndex = 1
         }
         val userName = "yadiq"
         mModel?.getMyRepos(
             userName,
             pageSize,
-            myReposPageIndex,
+            pageIndex,
             { response ->
-                val list = response as List<ReposEntity>
-                myReposPageIndex++ //偏移量+1
+                isLoading.postValue(false)
+                val res = response as List<ReposEntity>
+                pageIndex++ //偏移量+1
                 if (isRefresh)  //下拉覆盖，上拉增量
-                    myReposData.clear()
-                if (list.isNotEmpty())
-                    myReposData.addAll(list)
+                    list.clear()
+                if (res.isNotEmpty())
+                    list.addAll(res)
 
-                myReposRefresh = isRefresh //是否下拉
-                myReposNewEmpty = list.isEmpty() //增量是否为空
-                myReposResultCode.postValue("0") //错误码 0成功
+                listRefresh = isRefresh //是否下拉
+                listNewEmpty = list.isEmpty() //增量是否为空
+                listResultCode.postValue("0") //错误码 0成功
             },
             { errorMsg, code ->
-                myReposRefresh = isRefresh //是否下拉
-                myReposResultMsg = errorMsg //错误原因
-                myReposResultCode.postValue(code) //错误码 0成功
+                isLoading.postValue(false)
+                listRefresh = isRefresh //是否下拉
+                listResultCode.postValue(code) //错误码 0成功
+                CommonUtil.toast("获取列表失败\n$errorMsg")
             }
         )
     }

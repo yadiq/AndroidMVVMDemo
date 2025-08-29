@@ -10,6 +10,6 @@ package com.hqumath.demo.app
  */
 class EventBusKey {
     companion object {
-
+        const val MQTT_INFO = "mqtt_info" //MQTT信息
     }
 }

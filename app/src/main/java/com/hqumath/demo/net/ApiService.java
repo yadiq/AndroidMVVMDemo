@@ -4,11 +4,15 @@ import com.hqumath.demo.bean.ReposEntity;
 import com.hqumath.demo.bean.UserInfoEntity;
 
 import java.util.List;
+import java.util.Map;
 
 import io.reactivex.Observable;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import retrofit2.http.QueryMap;
 
 /**
  * ****************************************************************
@@ -25,6 +29,10 @@ public interface ApiService {
     //@Headers("Content-Type: application/json")
     //@POST("api/auth/loginApp")
     //Observable<BaseResult<LoginBean>> login(@Body Map<String, String> body);
+
+    //获取设备列表
+    //@GET("api/device/list")
+    //Observable<BaseResult<DeviceListBean>> getDeviceList(@QueryMap Map<String, String> query);
 
     //获取用户信息
     @GET("users/{userName}")

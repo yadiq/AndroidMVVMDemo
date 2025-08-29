@@ -2,8 +2,10 @@ package com.hqumath.demo.ui.login
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.TextUtils
 import android.view.View
 import androidx.lifecycle.ViewModelProvider
+import com.hqumath.demo.BuildConfig
 import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityLoginBinding
 import com.hqumath.demo.ui.main.MainActivity
@@ -26,10 +28,10 @@ class LoginActivity : BaseActivity() {
     }
 
     override fun initData() {
-        viewModel = ViewModelProvider(mContext)[LoginViewModel::class.java]
+        viewModel = ViewModelProvider(this)[LoginViewModel::class.java]
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
-
+//        isLogin()
     }
 
     override fun initViewObservable() {
@@ -47,11 +49,24 @@ class LoginActivity : BaseActivity() {
                     startActivity(Intent(mContext, MainActivity::class.java))
                     finish()
                 }
-
-                else -> {
-                    CommonUtil.toast("登录失败\n" + code + "," + viewModel.loginResultMsg)
-                }
             }
+        }
+    }
+
+    private fun isLogin() {
+//        val token = DataStoreUtil.getData(DataStoreKey.TOKEN, "")
+//        if (!TextUtils.isEmpty(token)) {
+//            startActivity(Intent(mContext, MainActivity::class.java))
+//            finish()
+//            return
+//        }
+//        val userName = DataStoreUtil.getData(DataStoreKey.USER_NAME, "")
+//        viewModel.userName.postValue(userName)
+
+        //缺省的账号密码
+        if (BuildConfig.DEBUG) {
+            viewModel.userName.postValue("yadiq")
+            viewModel.password.postValue("1")
         }
     }
 }
