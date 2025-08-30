@@ -45,8 +45,7 @@ public class HandlerException {
                 case SERVICE_UNAVAILABLE:
                 case GATEWAY_TIMEOUT:
                 default:
-                    //ex.setMessage("网络错误");
-                    ex.setMessage("服务器开小差啦(" + httpException.code() + ")");
+                    ex.setMessage("网络错误(" + httpException.code() + ")");
                     break;
             }
             return ex;
