@@ -42,10 +42,12 @@ class MyReposViewModel(application: Application) : AndroidViewModel(application)
             pageIndex = 1
         }
         val userName = "yadiq"
+        val map = HashMap<String, String>()
+        map["page"] = pageIndex.toString()
+        map["per_page"] = pageSize.toString()
         mModel?.getMyRepos(
             userName,
-            pageSize,
-            pageIndex,
+            map,
             { response ->
                 isLoading.postValue(false)
                 val res = response as List<ReposEntity>

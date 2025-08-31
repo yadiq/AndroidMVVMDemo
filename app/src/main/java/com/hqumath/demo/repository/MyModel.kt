@@ -59,16 +59,14 @@ class MyModel : BaseModel() {
 
     fun getMyRepos(
         userName: String,
-        pageSize: Int,
-        pageIndex: Long,
+        query: Map<String, String>,
         onSuccess: (response: Any) -> Unit,
         onError: (errorMsg: String, code: String) -> Unit
     ) {
         sendRequest(
             RetrofitClient.getInstance().apiService.getMyRepos(
                 userName,
-                pageSize,
-                pageIndex
+                query
             ),
             onSuccess,
             onError

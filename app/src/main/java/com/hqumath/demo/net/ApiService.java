@@ -40,6 +40,6 @@ public interface ApiService {
 
     //获取用户仓库
     @GET("users/{userName}/repos")
-    Observable<List<ReposEntity>> getMyRepos(@Path("userName") String userName, @Query("per_page") int per_page, @Query("page") long page);
+    Observable<List<ReposEntity>> getMyRepos(@Path("userName") String userName, @QueryMap Map<String, String> query);
 
 }
