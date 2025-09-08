@@ -3,7 +3,6 @@ package com.hqumath.demo.ui.main
 import android.os.Bundle
 import android.util.Size
 import android.view.View
-import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -15,14 +14,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityTakePictureBinding
-import com.hqumath.demo.utils.CommonUtil
 import com.hqumath.demo.utils.FileUtil
 import com.hqumath.demo.utils.LogUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 // Camera2 API
 // CameraX
@@ -37,26 +34,7 @@ class TakePictureActivity : BaseActivity() {
 
     override fun initListener() {
         binding.btnTakePicture.setOnClickListener {
-            val name = System.currentTimeMillis().toString() + ".jpg"
-            val file = FileUtil.getExternalFile("snapshot", name)
-            val outputFileOptions = ImageCapture.OutputFileOptions.Builder(file).build()
-            imageCapture?.takePicture(
-                outputFileOptions,
-                ContextCompat.getMainExecutor(this),
-                object : ImageCapture.OnImageSavedCallback {
-                    override fun onError(error: ImageCaptureException) {
-                        LogUtil.e("Photo capture failed: ${error.message}")
-                        //CommonUtil.toast("拍照失败")
-                        // insert your code here.
-                    }
-
-                    override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                        val savedUri = outputFileResults.savedUri ?: return
-                        val msg = "Photo capture succeeded: $savedUri"
-                        //CommonUtil.toast(msg)
-                        LogUtil.d(msg)
-                    }
-                })
+            takePicture()
         }
 
     }
@@ -65,12 +43,11 @@ class TakePictureActivity : BaseActivity() {
         startCamera()
         //定时拍照
         lifecycleScope.launch(Dispatchers.IO) { //协程和生命周期能绑定
-            repeatOnLifecycle(Lifecycle.State.STARTED) { //当界面处于 Started（可见）以上时执行
+            //repeatOnLifecycle(Lifecycle.State.CREATED) { //onCreate()后启动 -> onDestroy()时取消
+            repeatOnLifecycle(Lifecycle.State.STARTED) { //onStart()时启动 -> onStop()时取消。
                 while (isActive) { //协程作用域取消时自动退出
-                    withContext(Dispatchers.Main) { //挂起当前协程，切到指定线程执行 block
-                        binding.btnTakePicture.performClick()
-                    }
-                    delay(5_000L) //1s一次
+                    takePicture()
+                    delay(3_000L) //1s一次
                 }
             }
         }
@@ -97,17 +74,43 @@ class TakePictureActivity : BaseActivity() {
             imageCapture = ImageCapture.Builder()
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY) //设置捕获模式为最小化延迟。可根据场景权衡延迟和质量
                 //.setTargetRotation(viewFinder.display.rotation) //设置目标旋转
-                .setTargetResolution(Size(1080, 1920)) //设置期望的最小输出分辨率。CameraX会选择不小于该值的最接近设备支持分辨率。提供一定程度的分辨率控制。如果不存在，则选择小于它的最接近分辨率。需通过 attachedSurfaceResolution 获取实际值
+                .setTargetResolution(
+                    Size(1080, 1920)
+                ) //设置期望的最小输出分辨率。CameraX会选择不小于该值的最接近设备支持分辨率。提供一定程度的分辨率控制。如果不存在，则选择小于它的最接近分辨率。需通过 attachedSurfaceResolution 获取实际值
                 .build()
             try {
                 //解除所有绑定
                 cameraProvider.unbindAll()
                 //将用例绑定到生命周期所有者 和 CameraProvider
-                val camera = cameraProvider.bindToLifecycle(this, cameraSelector,
-                    preview, imageCapture)
+                val camera = cameraProvider.bindToLifecycle(
+                    this, cameraSelector, preview, imageCapture
+                )
             } catch (exc: Exception) {
                 LogUtil.e("Use case binding failed " + exc)
             }
         }, ContextCompat.getMainExecutor(this))
+    }
+
+    private fun takePicture() {
+        val name = System.currentTimeMillis().toString() + ".jpg"
+        val file = FileUtil.getExternalFile("snapshot", name)
+        val outputFileOptions = ImageCapture.OutputFileOptions.Builder(file).build()
+        imageCapture?.takePicture(
+            outputFileOptions,
+            ContextCompat.getMainExecutor(this),
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onError(error: ImageCaptureException) {
+                    LogUtil.e("Photo capture failed: ${error.message}")
+                    //CommonUtil.toast("拍照失败")
+                    // insert your code here.
+                }
+
+                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                    val savedUri = outputFileResults.savedUri ?: return
+                    val msg = "Photo capture succeeded: $savedUri"
+                    //CommonUtil.toast(msg)
+                    LogUtil.d(msg)
+                }
+            })
     }
 }
