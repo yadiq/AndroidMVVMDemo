@@ -7,6 +7,9 @@ import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityMainBinding
 import com.hqumath.demo.ui.login.LoginActivity
 import com.hqumath.demo.ui.repos.MyReposActivity
+import com.hqumath.demo.utils.PermissionUtil
+import com.yanzhenjie.permission.AndPermission
+import com.yanzhenjie.permission.runtime.Permission
 
 /**
  * ****************************************************************
@@ -27,7 +30,15 @@ class MainActivity : BaseActivity() {
 
     override fun initListener() {
         binding.btnLogin.setOnClickListener {
-            startActivity(Intent(mContext, LoginActivity::class.java))
+            AndPermission.with(mContext)
+                .runtime()
+                .permission(Permission.CAMERA)
+                .onGranted { permissions: List<String?>? ->
+                    startActivity(Intent(mContext, TakePictureActivity::class.java))
+                }
+                .onDenied { permissions: List<String?>? ->  //未全部授权
+                    PermissionUtil.showSettingDialog(mContext, permissions) //自定义弹窗 去设置界面
+                }.start()
         }
         binding.btnMyRepos.setOnClickListener {
             startActivity(Intent(mContext, MyReposActivity::class.java))
