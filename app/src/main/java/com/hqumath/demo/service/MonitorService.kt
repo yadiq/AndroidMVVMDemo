@@ -148,7 +148,7 @@ class MonitorService : Service() {
                 )
             } catch (e: Exception) {
                 e.printStackTrace()
-                LogUtil.d(TAG, "打开相机异常")
+                LogUtil.d(TAG, "打开相机异常 openCameraPreview")
             }
         }, ContextCompat.getMainExecutor(this))
     }
@@ -204,6 +204,7 @@ class MonitorService : Service() {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                LogUtil.d(TAG, "打开相机异常 quickCamera")
                 //唤醒线程
                 synchronized(lockCamera) {
                     lockCamera.notifyAll()
@@ -216,6 +217,7 @@ class MonitorService : Service() {
                 lockCamera.wait()
             } catch (e: InterruptedException) {
                 e.printStackTrace()
+                LogUtil.d(TAG, "线程锁异常 lockCamera")
             }
         }
         return filePath
@@ -267,6 +269,7 @@ class MonitorService : Service() {
                 lockPicture.wait()
             } catch (e: InterruptedException) {
                 e.printStackTrace()
+                LogUtil.d(TAG, "线程锁异常 lockPicture")
             }
         }
         return filePath
