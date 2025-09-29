@@ -8,7 +8,14 @@ import android.content.Intent
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.util.Size
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.Preview
+import androidx.camera.core.Preview.SurfaceProvider
+import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.hqumath.demo.R
 import com.hqumath.demo.utils.LogUtil
 
@@ -16,6 +23,9 @@ import com.hqumath.demo.utils.LogUtil
 class MonitorService : Service() {
     private val TAG: String = "MonitorService"
     private val binder: IBinder = LocalBinder()
+    private val lifecycleOwner = ServiceLifecycleOwner() // 自定义 LifecycleOwner
+    private var cameraProvider: ProcessCameraProvider? = null
+    private var useCamera = false
 
     companion object {
         const val NOTIFICATION_ID = 1
@@ -29,12 +39,14 @@ class MonitorService : Service() {
 
     //绑定时启动服务
     override fun onBind(intent: Intent?): IBinder? {
+        lifecycleOwner.handleServiceStart() // 服务绑定时，将生命周期置为 STARTED
         startForegroundService()
         return binder
     }
 
     //解绑时关闭服务
     override fun onUnbind(intent: Intent?): Boolean {
+        lifecycleOwner.handleServiceStop()  // 服务解绑时，将生命周期置为 DESTROYED
         stopForegroundService()
         return super.onUnbind(intent)
     }
@@ -82,10 +94,50 @@ class MonitorService : Service() {
             .build()
     }
 
-    // 服务提供的业务方法
-    fun performTask(taskData: String?) {
-        // 执行某些任务
-        LogUtil.d("ForegroundService", "执行任务: " + taskData)
+    // 打开相机
+    fun openCamera(surfaceProvider: SurfaceProvider) {
+        if (useCamera) {
+            return
+        } else {
+            useCamera = true
+        }
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        cameraProviderFuture.addListener({
+            try {
+                //获取指定摄像头
+                val selector = CameraSelector.DEFAULT_BACK_CAMERA
+                //预览
+                val preview = Preview.Builder().build()
+                preview.setSurfaceProvider(surfaceProvider)
+                //拍照
+                val imageCapture = ImageCapture.Builder()
+                    .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                    .setTargetResolution(
+                        Size(1080, 1920)
+                    ) //设置期望的最小输出分辨率。CameraX会选择不小于该值的最接近设备支持分辨率。提供一定程度的分辨率控制。如果不存在，则选择小于它的最接近分辨率。需通过 attachedSurfaceResolution 获取实际值
+                    .build()
+                //CameraProvider
+                cameraProvider = cameraProviderFuture.get()
+                //确保先解绑所有用例。在主线程执行
+                cameraProvider?.unbindAll()
+                //将用例绑定到生命周期所有者 和 CameraProvider
+                cameraProvider?.bindToLifecycle(
+                    lifecycleOwner,
+                    selector,
+                    preview,
+                    imageCapture
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+                LogUtil.d(TAG, "打开相机异常")
+            }
+        }, ContextCompat.getMainExecutor(this))
+    }
+
+    // 关闭相机
+    fun closeCamera() {
+        cameraProvider?.unbindAll()
+        useCamera = false
     }
 
     override fun onDestroy() {

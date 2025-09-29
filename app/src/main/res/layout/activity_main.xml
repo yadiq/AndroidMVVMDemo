@@ -33,4 +33,9 @@
         app:backgroundTint="@color/theme_color"
         app:cornerRadius="28dp" />
 
+    <androidx.camera.view.PreviewView
+        android:id="@+id/previewView"
+        android:layout_width="match_parent"
+        android:layout_height="400dp" />
+
 </LinearLayout>

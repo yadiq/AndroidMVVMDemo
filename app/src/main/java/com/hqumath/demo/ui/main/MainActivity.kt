@@ -40,19 +40,24 @@ class MainActivity : BaseActivity() {
 
     override fun initListener() {
         binding.btnLogin.setOnClickListener {
-            AndPermission.with(mContext)
-                .runtime()
-                .permission(Permission.CAMERA)
-                .onGranted { permissions: List<String?>? ->
-                    startActivity(Intent(mContext, TakePictureActivity::class.java))
-                }
-                .onDenied { permissions: List<String?>? ->  //未全部授权
-                    PermissionUtil.showSettingDialog(mContext, permissions) //自定义弹窗 去设置界面
-                }.start()
+//            AndPermission.with(mContext)
+//                .runtime()
+//                .permission(Permission.CAMERA)
+//                .onGranted { permissions: List<String?>? ->
+//                    startActivity(Intent(mContext, TakePictureActivity::class.java))
+//                }
+//                .onDenied { permissions: List<String?>? ->  //未全部授权
+//                    PermissionUtil.showSettingDialog(mContext, permissions) //自定义弹窗 去设置界面
+//                }.start()
+            monitorService?.openCamera(binding.previewView.surfaceProvider)
         }
         binding.btnMyRepos.setOnClickListener {
-            startActivity(Intent(mContext, MyReposActivity::class.java))
+//            startActivity(Intent(mContext, MyReposActivity::class.java))
+            monitorService?.closeCamera()
         }
+
+        //开启相机=预览  /拍照
+        //关闭相机=释放
     }
 
     override fun initData() {
@@ -105,22 +110,6 @@ class MainActivity : BaseActivity() {
         val serviceIntent = Intent(this, MonitorService::class.java)
         bindService(serviceIntent, connection, BIND_AUTO_CREATE)
     }
-
-    //前台服务
-//    fun startMyForegroundService() {
-//        val serviceIntent = Intent(this, MonitorService::class.java)
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            startForegroundService(serviceIntent) // Android 8.0+ 推荐方式
-//        } else {
-//            startService(serviceIntent)
-//        }
-//        bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE);
-//    }
-
-//    fun stopMyForegroundService() {
-//        val serviceIntent = Intent(this, MonitorService::class.java)
-//        stopService(serviceIntent)
-//    }
 
     private val connection: ServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
