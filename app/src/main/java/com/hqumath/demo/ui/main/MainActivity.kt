@@ -11,6 +11,7 @@ import android.view.View
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.hqumath.demo.app.Constant
 import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityMainBinding
 import com.hqumath.demo.dialog.CommonDialog
@@ -18,9 +19,7 @@ import com.hqumath.demo.service.MonitorService
 import com.hqumath.demo.ui.repos.MyReposActivity
 import com.hqumath.demo.utils.CommonUtil
 import com.hqumath.demo.utils.LogUtil
-import com.hqumath.demo.utils.PermissionUtil
 import com.yanzhenjie.permission.AndPermission
-import com.yanzhenjie.permission.runtime.Permission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -37,7 +36,6 @@ import kotlinx.coroutines.launch
  */
 class MainActivity : BaseActivity() {
     private lateinit var binding: ActivityMainBinding
-    private var monitorService: MonitorService? = null
 
     override fun initContentView(savedInstanceState: Bundle?): View {
         //enableEdgeToEdge() 启用沉浸式布局
@@ -47,25 +45,11 @@ class MainActivity : BaseActivity() {
 
     override fun initListener() {
         binding.btnLogin.setOnClickListener {
-//            AndPermission.with(mContext)
-//                .runtime()
-//                .permission(Permission.CAMERA)
-//                .onGranted { permissions: List<String?>? ->
-//                    startActivity(Intent(mContext, TakePictureActivity::class.java))
-//                }
-//                .onDenied { permissions: List<String?>? ->  //未全部授权
-//                    PermissionUtil.showSettingDialog(mContext, permissions) //自定义弹窗 去设置界面
-//                }.start()
-
-//            monitorService?.openCamera(binding.previewView.surfaceProvider)
+            startActivity(Intent(mContext, TakePictureActivity::class.java))
         }
         binding.btnMyRepos.setOnClickListener {
             startActivity(Intent(mContext, MyReposActivity::class.java))
-//            monitorService?.closeCamera()
         }
-
-        //开启相机=预览  /拍照
-        //关闭相机=释放
     }
 
     override fun initData() {
@@ -92,9 +76,9 @@ class MainActivity : BaseActivity() {
     override fun onDestroy() {
         super.onDestroy()
         //解绑服务
-        if (monitorService != null) {
+        if (Constant.monitorService != null) {
             unbindService(connection)
-            monitorService = null
+            Constant.monitorService = null
         }
     }
 
@@ -122,8 +106,8 @@ class MainActivity : BaseActivity() {
             repeatOnLifecycle(Lifecycle.State.CREATED) { //onCreate()后启动 -> onDestroy()时取消
                 delay(10_000L) //
                 while (isActive) { //协程作用域取消时自动退出
-                    monitorService?.quickCamera(0)
-                    monitorService?.quickCamera(1)
+                    Constant.monitorService?.quickCamera(0)
+                    Constant.monitorService?.quickCamera(1)
                     delay(10_000L) //
                 }
             }
@@ -133,13 +117,13 @@ class MainActivity : BaseActivity() {
     private val connection: ServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             val binder: MonitorService.LocalBinder = service as MonitorService.LocalBinder
-            monitorService = binder.getService()
+            Constant.monitorService = binder.getService()
             LogUtil.d("MonitorService", "服务已绑定")
         }
 
         //正常解绑时不会调用, 只在服务进程意外崩溃或被系统杀死时调用
         override fun onServiceDisconnected(name: ComponentName?) {
-            monitorService = null;
+            Constant.monitorService = null;
             LogUtil.d("MonitorService", "服务意外断开连接")
         }
     }

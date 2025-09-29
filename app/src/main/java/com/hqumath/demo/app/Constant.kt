@@ -1,5 +1,6 @@
 package com.hqumath.demo.app
 
+import com.hqumath.demo.service.MonitorService
 import com.hqumath.demo.utils.DataStoreUtil
 
 /**
@@ -14,12 +15,7 @@ class Constant {
     companion object {
         const val BASE_API: String = "https://api.github.com/" //API服务器
 
-        //请求通用参数
-        fun getBaseMap(): HashMap<String, String> {
-            val token = DataStoreUtil.getData(DataStoreKey.TOKEN, "")
-            val map = HashMap<String, String>()
-            map["token"] = token
-            return map
-        }
+        var monitorService: MonitorService? = null //拍照服务
+        var isCameraTest = false //是否在测试相机
     }
 }

@@ -20,6 +20,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.hqumath.demo.R
+import com.hqumath.demo.app.Constant
 import com.hqumath.demo.utils.FileUtil
 import com.hqumath.demo.utils.LogUtil
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +34,7 @@ class MonitorService : Service() {
     private val binder: IBinder = LocalBinder()
     private val lifecycleOwner = ServiceLifecycleOwner() // 自定义 LifecycleOwner
     private var cameraProvider: ProcessCameraProvider? = null
+    private var imageCapture: ImageCapture? = null
     private var useCamera = false
 
     ////////抓拍相关
@@ -128,7 +130,7 @@ class MonitorService : Service() {
                 val preview = Preview.Builder().build()
                 preview.setSurfaceProvider(surfaceProvider)
                 //拍照
-                val imageCapture = ImageCapture.Builder()
+                imageCapture = ImageCapture.Builder()
                     .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                     //.setTargetRotation(Surface.ROTATION_90) //设置目标旋转
                     .setTargetResolution(
@@ -151,7 +153,7 @@ class MonitorService : Service() {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    // 关闭相机
+    //关闭相机
     @MainThread
     fun closeCamera() {
         cameraProvider?.unbindAll()
@@ -163,8 +165,9 @@ class MonitorService : Service() {
     /**
      * 初始化相机 - 拍照 - 释放相机
      */
-//    @SuppressLint("UnsafeOptInUsageError")
     fun quickCamera(channel_no: Int): String {
+        if (Constant.isCameraTest)
+            return ""
         if (useCamera) {
             closeCamera()
         }
@@ -180,7 +183,7 @@ class MonitorService : Service() {
                 if (cameraSelector == null)
                     throw IllegalStateException("相机状态不正常")
                 //拍照
-                val imageCapture = ImageCapture.Builder()
+                imageCapture = ImageCapture.Builder()
                     .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY) //设置捕获模式为最小化延迟。可根据场景权衡延迟和质量
                     //.setTargetRotation(Surface.ROTATION_90) //设置目标旋转
                     .setTargetResolution(
@@ -193,7 +196,7 @@ class MonitorService : Service() {
                 cameraProvider?.bindToLifecycle(lifecycleOwner, cameraSelector, imageCapture)
                 lifecycleOwner.lifecycleScope.launch(Dispatchers.IO) { //切换到工作协程
                     //开始拍照
-                    filePath = takePicture(imageCapture, channel_no)
+                    filePath = takePicture(channel_no, true)
                     //唤醒线程
                     synchronized(lockCamera) {
                         lockCamera.notifyAll()
@@ -220,14 +223,18 @@ class MonitorService : Service() {
 
     /**
      * 拍照
+     * @param channel_no 相机序号
+     * @param close 拍照后是否关闭相机
      * @return 图片路径
      */
-    fun takePicture(imageCapture: ImageCapture, channel_no: Int): String {
+    fun takePicture(channel_no: Int, close: Boolean): String {
         var filePath = ""
+        if (imageCapture == null)
+            return filePath
         val name = sdf.format(Date()) + "_$channel_no.jpg"
         val file = FileUtil.getExternalFile("picture", name)
         val outputFileOptions = ImageCapture.OutputFileOptions.Builder(file).build()
-        imageCapture.takePicture(
+        imageCapture!!.takePicture(
             outputFileOptions,
             ContextCompat.getMainExecutor(getApplication()),
             object : ImageCapture.OnImageSavedCallback { //切换到主线程
@@ -235,7 +242,8 @@ class MonitorService : Service() {
                     filePath = file.absolutePath
                     val msg = "拍照成功: $filePath"
                     LogUtil.d(TAG, msg)
-                    closeCamera()
+                    if (close)
+                        closeCamera()
                     //唤醒线程
                     synchronized(lockPicture) {
                         lockPicture.notifyAll()
@@ -245,7 +253,8 @@ class MonitorService : Service() {
                 override fun onError(error: ImageCaptureException) {
                     val msg = "拍照失败: ${error.message}"
                     LogUtil.d(TAG, msg)
-                    closeCamera()
+                    if (close)
+                        closeCamera()
                     //唤醒线程
                     synchronized(lockPicture) {
                         lockPicture.notifyAll()
