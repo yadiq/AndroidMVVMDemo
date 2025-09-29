@@ -91,10 +91,9 @@ dependencies {
     implementation("io.github.scwang90:refresh-header-classics:3.0.0-alpha") //经典刷新头
 
 
-    val camerax_version = "1.2.0" // 请检查并使用最新稳定版本
+    val camerax_version = "1.2.3" // 请检查并使用最新稳定版本
     implementation("androidx.camera:camera-core:${camerax_version}")
     implementation("androidx.camera:camera-camera2:${camerax_version}")
     implementation("androidx.camera:camera-lifecycle:${camerax_version}")
-    // 如果需要使用 CameraView
     implementation("androidx.camera:camera-view:${camerax_version}")
 }

@@ -9,8 +9,9 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
-
-
+    <!--前台服务-->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!--权限获取库-->
     <permission-group android:name="${applicationId}.andpermission" />
 
@@ -74,6 +75,12 @@
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|navigation|keyboard|keyboardHidden|touchscreen|fontScale|locale"
             android:exported="false"
             android:screenOrientation="portrait"/>
+
+        <!--前台服务-->
+        <service
+            android:name="com.hqumath.demo.service.MonitorService"
+            android:exported="false"
+            android:foregroundServiceType="camera" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
