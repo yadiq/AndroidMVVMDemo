@@ -1,9 +1,12 @@
 package com.hqumath.demo.ui.main
 
 import android.Manifest
+import android.content.ComponentName
 import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import android.view.View
 import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityMainBinding
@@ -11,9 +14,11 @@ import com.hqumath.demo.dialog.CommonDialog
 import com.hqumath.demo.service.MonitorService
 import com.hqumath.demo.ui.repos.MyReposActivity
 import com.hqumath.demo.utils.CommonUtil
+import com.hqumath.demo.utils.LogUtil
 import com.hqumath.demo.utils.PermissionUtil
 import com.yanzhenjie.permission.AndPermission
 import com.yanzhenjie.permission.runtime.Permission
+
 
 /**
  * ****************************************************************
@@ -25,6 +30,7 @@ import com.yanzhenjie.permission.runtime.Permission
  */
 class MainActivity : BaseActivity() {
     private lateinit var binding: ActivityMainBinding
+    private var monitorService: MonitorService? = null
 
     override fun initContentView(savedInstanceState: Bundle?): View {
         //enableEdgeToEdge() 启用沉浸式布局
@@ -70,6 +76,15 @@ class MainActivity : BaseActivity() {
     override fun initViewObservable() {
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        //解绑服务
+        if (monitorService != null) {
+            unbindService(connection)
+            monitorService = null
+        }
+    }
+
     override fun onBackPressed() {
         val dialog = CommonDialog(
             context = mContext,
@@ -77,7 +92,6 @@ class MainActivity : BaseActivity() {
             message = "是否确认退出？",
             positiveText = "确定",
             positiveAction = {
-                stopMyForegroundService()
                 finish()
             },
             negativeText = "取消",
@@ -87,21 +101,38 @@ class MainActivity : BaseActivity() {
     }
 
     private fun afterPermission() {
-        startMyForegroundService()//启动前台服务
+        //绑定服务
+        val serviceIntent = Intent(this, MonitorService::class.java)
+        bindService(serviceIntent, connection, BIND_AUTO_CREATE)
     }
 
     //前台服务
-    fun startMyForegroundService() {
-        val serviceIntent = Intent(this, MonitorService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent) // Android 8.0+ 推荐方式
-        } else {
-            startService(serviceIntent)
-        }
-    }
+//    fun startMyForegroundService() {
+//        val serviceIntent = Intent(this, MonitorService::class.java)
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            startForegroundService(serviceIntent) // Android 8.0+ 推荐方式
+//        } else {
+//            startService(serviceIntent)
+//        }
+//        bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE);
+//    }
 
-    fun stopMyForegroundService() {
-        val serviceIntent = Intent(this, MonitorService::class.java)
-        stopService(serviceIntent)
+//    fun stopMyForegroundService() {
+//        val serviceIntent = Intent(this, MonitorService::class.java)
+//        stopService(serviceIntent)
+//    }
+
+    private val connection: ServiceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder: MonitorService.LocalBinder = service as MonitorService.LocalBinder
+            monitorService = binder.getService()
+            LogUtil.d("MonitorService", "服务已绑定")
+        }
+
+        //正常解绑时不会调用, 只在服务进程意外崩溃或被系统杀死时调用
+        override fun onServiceDisconnected(name: ComponentName?) {
+            monitorService = null;
+            LogUtil.d("MonitorService", "服务意外断开连接")
+        }
     }
 }
