@@ -180,8 +180,8 @@ public class FileUtil {
     }
 
     /**
-     * 复制assets文件夹到本地存储。若存在则跳过
-     *
+     * 复制assets子文件夹到应用专属目录。若存在则跳过
+     * 应用专属目录: /storage/emulated/0/Android/data/packname/files
      * @param context
      * @param assetsDirName assets子文件夹名称
      */
@@ -191,34 +191,46 @@ public class FileUtil {
     }
 
     /**
-     * 复制assets文件夹到本地存储。若存在则跳过
+     * 复制assets子文件夹到指定目录。若存在则跳过
      *
      * @param context
-     * @param assetsDirName assets子文件夹名称
-     * @param filePath 存储目录
+     * @param assetsDirName assets子文件夹名称。""表示根目录(不建议,因为Android系统会自动打包进去一些隐藏资源)
+     * @param filePath 指定目录。默认为应用专属外部存储空间 /storage/emulated/0/Android/data/packname/files
      */
     public static void copyAssetsDirToSDCard(Context context, String assetsDirName, String filePath) {
         try {
+            //assetsDirName不能以/开头
+            if (assetsDirName.startsWith("/"))
+                assetsDirName = assetsDirName.substring(1);
+            //filePath不能以/结尾
+            if (filePath.endsWith("/"))
+                filePath = filePath.substring(0, filePath.length() - 1);
             String list[] = context.getAssets().list(assetsDirName);
-            if (list.length == 0) {
-                InputStream inputStream = context.getAssets().open(assetsDirName);
-                byte[] mByte = new byte[1024];
-                int bt = 0;
-                File file = new File(filePath + File.separator
-                        + assetsDirName.substring(assetsDirName.lastIndexOf('/')));
+            if (list.length == 0) {//文件
+                //创建文件
+                String fileName = assetsDirName;
+                if (assetsDirName.contains("/")) {
+                    fileName = assetsDirName.substring(assetsDirName.lastIndexOf('/') + 1);
+                }
+                File file = new File(filePath + File.separator + fileName);
                 if (!file.exists()) {
                     file.createNewFile();
                 } else {
                     return;
                 }
+                //复制文件
+                InputStream inputStream = context.getAssets().open(assetsDirName);
                 FileOutputStream fos = new FileOutputStream(file);
+                int bt;
+                byte[] mByte = new byte[1024];
                 while ((bt = inputStream.read(mByte)) != -1) {
                     fos.write(mByte, 0, bt);
                 }
                 fos.flush();
                 inputStream.close();
                 fos.close();
-            } else {
+            } else {//文件夹
+                //创建文件夹
                 String subDirName = assetsDirName;
                 if (assetsDirName.contains("/")) {
                     subDirName = assetsDirName.substring(assetsDirName.lastIndexOf('/') + 1);
@@ -227,12 +239,14 @@ public class FileUtil {
                 File file = new File(filePath);
                 if (!file.exists())
                     file.mkdirs();
+                //遍历文件 复制
                 for (String s : list) {
                     copyAssetsDirToSDCard(context, assetsDirName + File.separator + s, filePath);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
+            LogUtil.d("CopyAssets error path=" + assetsDirName);
         }
     }
 }
