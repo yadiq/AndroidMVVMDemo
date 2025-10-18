@@ -25,6 +25,7 @@ AndroidMVVM的精简版本，快速开发框架
 
 2. AGP与Gradle、JDK 的版本对应关系
 + AGP           最小Gradle  最小JDK
++ 8.10              8.11    17 #最新选择 AGP8.10.1 Gradle8.11.1 JDK17 Kotlin2.1.20(K2编译器)
 + 8.4	            8.6	    17
 + 8.3	            8.4   	17
 + 8.2            	8.2	    17
@@ -48,15 +49,31 @@ AndroidMVVM的精简版本，快速开发框架
 
 3. AS与AGP版本关系
 + AndroidStudio          AGP
++ Narwhal | 025.1.4      4.0–8.13
++ Meerkat | 2024.3.2     3.2–8.10 当前版本 AS:2024.3.2 Patch1
++ Ladybug | 2024.2.1     3.2–8.8
 + Koala | 2024.1.1       3.2-8.5
-+ Jellyfish | 2023.3.1   3.2-8.4 稳定版本
++ Jellyfish | 2023.3.1   3.2-8.4 
 + Iguana | 2023.2.1	   3.2-8.3
 + Hedgehog | 2023.1.1	   3.2-8.2
 + Giraffe | 2022.3.1     3.2-8.1
-+ Flamingo | 2022.2.1    3.2-8.0 当前版本
++ Flamingo | 2022.2.1    3.2-8.0
 + ElectricEel | 2022.1.1 3.2-7.4
 + Dolphin | 2021.3.1     3.2-7.3
 + Chipmunk | 2021.2.1    3.2-7.2
 + Bumblebee | 2021.1.1   3.2-7.1
 + Arctic Fox | 2020.3.1  3.1-7.0
 
+4. android api 与 compileSdk
+Android版本 API版本
+   16.0 36
+   15.0 35
+   14.0 34
+   13.0 33
+   12L  32
+   12.0 31
+   11.0 30
+   10.0 29
+   9.0  28
+   8.1  27
+   8.0  26

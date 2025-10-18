@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.hqumath.demo" //影响R类生成
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.hqumath.demo" //影响AndroidManifest中package
         minSdk = 21
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 100001
         versionName = "1.0.1_SignedRelease"
     }
@@ -62,7 +62,7 @@ android {
 dependencies {
     //implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     
-    implementation(libs.androidx.core.ktx) //Kotlin 扩展库
+    //implementation(libs.androidx.core.ktx) //Kotlin 扩展库
     implementation(libs.androidx.appcompat) //多语言切换需1.3.0及以上版本
     implementation(libs.androidx.datastore.preferences) //存储结构
     implementation(libs.material)
