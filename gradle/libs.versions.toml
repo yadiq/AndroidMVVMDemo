@@ -2,12 +2,12 @@
 agp = "8.10.1"
 datastorePreferences = "1.0.0"
 kotlin = "2.1.20"
-coreKtx = "1.12.0"
+#coreKtx = "1.12.0"
 appcompat = "1.4.2"
 material = "1.6.1"
 
 [libraries]
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+#androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
@@ -15,3 +15,7 @@ material = { module = "com.google.android.material:material", version.ref = "mat
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+#kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+
+
+

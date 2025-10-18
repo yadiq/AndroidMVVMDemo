@@ -1,16 +1,17 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.kapt")
 }
 
 android {
     namespace = "com.hqumath.demo" //影响R类生成
-    compileSdk = 34
+    compileSdk = 35 //调用最新API
 
     defaultConfig {
         applicationId = "com.hqumath.demo" //影响AndroidManifest中package
         minSdk = 21
-        targetSdk = 34
+        targetSdk = 33 //目标安卓版本，高版本会兼容旧行为
         versionCode = 100001
         versionName = "1.0.1_SignedRelease"
     }
