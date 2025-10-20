@@ -89,4 +89,8 @@ dependencies {
     //下拉刷新
     implementation("io.github.scwang90:refresh-layout-kernel:3.0.0-alpha") //核心必须依赖
     implementation("io.github.scwang90:refresh-header-classics:3.0.0-alpha") //经典刷新头
+
+    //implementation ("com.github.jiangdongguo.AndroidUSBCamera:libausbc:3.2.7")
+    implementation("com.github.chenyeju295.AndroidUSBCamera:libausbc:3.3.6")
+
 }

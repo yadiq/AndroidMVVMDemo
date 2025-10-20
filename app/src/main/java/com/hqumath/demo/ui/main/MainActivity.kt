@@ -1,12 +1,18 @@
 package com.hqumath.demo.ui.main
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityMainBinding
 import com.hqumath.demo.ui.login.LoginActivity
 import com.hqumath.demo.ui.repos.MyReposActivity
+import com.hqumath.demo.utils.CommonUtil
+import com.jiangdg.ausbc.base.CameraActivity
 
 /**
  * ****************************************************************
@@ -16,6 +22,7 @@ import com.hqumath.demo.ui.repos.MyReposActivity
  * 注意事项:
  * ****************************************************************
  */
+
 class MainActivity : BaseActivity() {
     private lateinit var binding: ActivityMainBinding
 
@@ -27,7 +34,7 @@ class MainActivity : BaseActivity() {
 
     override fun initListener() {
         binding.btnLogin.setOnClickListener {
-            startActivity(Intent(mContext, LoginActivity::class.java))
+            startActivity(Intent(mContext, CameraTestActivity::class.java))
         }
         binding.btnMyRepos.setOnClickListener {
             startActivity(Intent(mContext, MyReposActivity::class.java))
@@ -35,6 +42,16 @@ class MainActivity : BaseActivity() {
     }
 
     override fun initData() {
+        //申请相机权限
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 0);
+        } else {
+            CommonUtil.toast("未授予相机权限")
+        }
     }
 
     override fun initViewObservable() {
