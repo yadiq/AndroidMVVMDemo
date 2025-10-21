@@ -34,7 +34,7 @@ class MainActivity : BaseActivity() {
 
     override fun initListener() {
         binding.btnLogin.setOnClickListener {
-            startActivity(Intent(mContext, CameraTestActivity::class.java))
+            startActivity(Intent(mContext, CameraTestActivity1::class.java))
         }
         binding.btnMyRepos.setOnClickListener {
             startActivity(Intent(mContext, MyReposActivity::class.java))

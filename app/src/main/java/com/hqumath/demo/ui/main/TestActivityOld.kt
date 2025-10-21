@@ -14,7 +14,7 @@ import com.jiangdg.ausbc.utils.ToastUtils
 import com.jiangdg.ausbc.widget.AspectRatioTextureView
 import com.jiangdg.ausbc.widget.IAspectRatio
 
-class TestActivity : CameraActivity() {
+class TestActivityOld : CameraActivity() {
     private lateinit var binding: ActivityTestBinding
 
     override fun getRootView(inflater: LayoutInflater): View? {

@@ -61,7 +61,7 @@
         </activity>
 
         <activity
-            android:name="com.hqumath.demo.ui.main.TestActivity"
+            android:name="com.hqumath.demo.ui.main.CameraTestActivity1"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|navigation|keyboard|keyboardHidden|touchscreen|fontScale|locale"
             android:exported="true"
             android:screenOrientation="portrait"/>
@@ -71,7 +71,6 @@
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|navigation|keyboard|keyboardHidden|touchscreen|fontScale|locale"
             android:exported="true"
             android:screenOrientation="portrait"/>
-
 
         <activity
             android:name="com.hqumath.demo.ui.repos.MyReposActivity"

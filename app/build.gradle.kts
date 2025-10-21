@@ -92,5 +92,6 @@ dependencies {
 
     //implementation ("com.github.jiangdongguo.AndroidUSBCamera:libausbc:3.2.7")
     implementation("com.github.chenyeju295.AndroidUSBCamera:libausbc:3.3.6")
+    implementation("com.github.chenyeju295.AndroidUSBCamera:libuvc:3.3.6")
 
 }

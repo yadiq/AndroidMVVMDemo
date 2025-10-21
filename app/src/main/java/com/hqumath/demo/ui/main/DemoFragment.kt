@@ -11,12 +11,13 @@ import com.jiangdg.ausbc.MultiCameraClient
 import com.jiangdg.ausbc.base.CameraFragment
 import com.jiangdg.ausbc.callback.ICameraStateCallBack
 import com.jiangdg.ausbc.camera.CameraUVC
+import com.jiangdg.ausbc.camera.bean.CameraRequest
+import com.jiangdg.ausbc.render.env.RotateType
 import com.jiangdg.ausbc.utils.ToastUtils
 import com.jiangdg.ausbc.widget.AspectRatioTextureView
-import com.jiangdg.ausbc.widget.CaptureMediaView
 import com.jiangdg.ausbc.widget.IAspectRatio
 
-class DemoFragment : CameraFragment(), View.OnClickListener, CaptureMediaView.OnViewClickListener {
+open class DemoFragment : CameraFragment() {
     private lateinit var binding: FragmentDemoBinding
 
     override fun getRootView(
@@ -30,30 +31,30 @@ class DemoFragment : CameraFragment(), View.OnClickListener, CaptureMediaView.On
     override fun initView() {
         super.initView()
         binding.btnGetCameraList.setOnClickListener {
+            val sb = StringBuilder()
+            //相机列表
+            val usbDeviceList: MutableList<UsbDevice>? = getDeviceList()
+            if (usbDeviceList.isNullOrEmpty()) {
+                sb.append("Get usb device failed")
+                binding.tvInfo.setText(sb.toString())
+                return@setOnClickListener
+            }
+            for (index in (0 until usbDeviceList.size)) {
+                val dev = usbDeviceList[index]
+                val cameraInfo =
+                    "相机${index},${dev.productName},${dev.deviceName},${dev.productId}"
+                sb.append(cameraInfo).append("\n")
+                LogUtil.d(cameraInfo)
+            }
             getCurrentCamera()?.let { strategy ->
                 if (strategy is CameraUVC) {
-                    val sb = StringBuilder()
                     val curDevice = strategy.getUsbDevice()
                     val curDeviceInfo =
                         "当前: ,${curDevice.productName},${curDevice.deviceName},${curDevice.productId}"
                     sb.append(curDeviceInfo).append("\n")
-                    LogUtil.d(curDeviceInfo)
-                    //相机列表
-                    val usbDeviceList: MutableList<UsbDevice>? = getDeviceList()
-                    if (usbDeviceList.isNullOrEmpty()) {
-                        ToastUtils.show("Get usb device failed")
-                        return@let
-                    }
-                    for (index in (0 until usbDeviceList.size)) {
-                        val dev = usbDeviceList[index]
-                        val cameraInfo =
-                            "相机${index},${dev.productName},${dev.deviceName},${dev.productId}"
-                        sb.append(cameraInfo).append("\n")
-                        LogUtil.d(cameraInfo)
-                    }
-                    binding.tvInfo.setText(sb.toString())
                 }
             }
+            binding.tvInfo.setText(sb.toString())
         }
 
         binding.btnSwitch.setOnClickListener {
@@ -66,6 +67,9 @@ class DemoFragment : CameraFragment(), View.OnClickListener, CaptureMediaView.On
         }
     }
 
+    override fun initData() {
+        super.initData()
+    }
 
     override fun getCameraView(): IAspectRatio {
         return AspectRatioTextureView(requireContext())
@@ -89,46 +93,36 @@ class DemoFragment : CameraFragment(), View.OnClickListener, CaptureMediaView.On
         }
     }
 
-    override fun onClick(p0: View?) {
-        TODO("Not yet implemented")
+    //打开默认相机
+    override fun getDefaultCamera(): UsbDevice? {
+        return null
     }
 
-    override fun onViewClick(mode: CaptureMediaView.CaptureMode?) {
-        TODO("Not yet implemented")
+    //相机配置
+    override fun getCameraRequest(): CameraRequest {
+        return CameraRequest.Builder()
+            .setPreviewWidth(640)
+            .setPreviewHeight(480)
+            .setRenderMode(CameraRequest.RenderMode.OPENGL)
+            .setDefaultRotateType(RotateType.ANGLE_0)
+//            .setAudioSource(CameraRequest.AudioSource.SOURCE_SYS_MIC)
+            .setPreviewFormat(CameraRequest.PreviewFormat.FORMAT_MJPEG)
+            .setAspectRatioShow(true)
+            .setCaptureRawImage(false)
+            .setRawPreviewData(false)
+            .create()
     }
 
     /////////////////////////
     private fun handleCameraError(msg: String?) {
-//        mViewBinding.uvcLogoIv.visibility = View.VISIBLE
-//        mViewBinding.frameRateTv.visibility = View.GONE
         ToastUtils.show("camera opened error: $msg")
     }
 
     private fun handleCameraClosed() {
-//        mViewBinding.uvcLogoIv.visibility = View.VISIBLE
-//        mViewBinding.frameRateTv.visibility = View.GONE
         ToastUtils.show("camera closed success")
     }
 
     private fun handleCameraOpened() {
-//        mViewBinding.uvcLogoIv.visibility = View.GONE
-//        mViewBinding.frameRateTv.visibility = View.VISIBLE
-//        mViewBinding.brightnessSb.max = (getCurrentCamera() as? CameraUVC)?.getBrightnessMax() ?: 100
-//        mViewBinding.brightnessSb.progress = (getCurrentCamera() as? CameraUVC)?.getBrightness() ?: 0
-//        Logger.i(com.jiangdg.demo.DemoFragment.Companion.TAG, "max = ${mViewBinding.brightnessSb.max}, progress = ${mViewBinding.brightnessSb.progress}")
-//        mViewBinding.brightnessSb.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-//            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-//                (getCurrentCamera() as? CameraUVC)?.setBrightness(progress)
-//            }
-//
-//            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-//
-//            }
-//
-//            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-//
-//            }
-//        })
         ToastUtils.show("camera opened success")
     }
 }
