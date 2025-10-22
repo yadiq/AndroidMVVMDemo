@@ -42,7 +42,7 @@ class CameraTestActivity1 : BaseActivity() {
                 if (strategy is CameraUVC) {
                     val curDevice = strategy.getUsbDevice()
                     val curDeviceInfo =
-                        "当前: ,${curDevice.productName},${curDevice.deviceName},${curDevice.productId}"
+                        "当前:${curDevice.productName},${curDevice.deviceName},${curDevice.productId}"
                     sb.append(curDeviceInfo).append("\n")
                 }
             }

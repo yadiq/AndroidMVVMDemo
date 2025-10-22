@@ -38,9 +38,9 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
     val mCameraMap = hashMapOf<Int, MultiCameraClient.ICamera>()
     var mCurrentCamera: SettableFuture<MultiCameraClient.ICamera>? = null
 
-    val mRequestPermission: AtomicBoolean by lazy {
-        AtomicBoolean(false)
-    }
+//    val mRequestPermission: AtomicBoolean by lazy {
+//        AtomicBoolean(false)
+//    }
 
     init {
 
@@ -61,26 +61,26 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
                 generateCamera(ctx, device).apply {
                     mCameraMap[device.deviceId] = this
                 }
-                // Initiate permission request when device insertion is detected
-                // If you want to open the specified camera, you need to override getDefaultCamera()
-                if (mRequestPermission.get()) {
-                    return
-                }
-                getDefaultCamera()?.apply {
-                    if (vendorId == device.vendorId && productId == device.productId) {
-                        LogUtil.d(TAG, "default camera pid: $productId, vid: $vendorId")
-                        requestPermission(device)
-                    }
-                    return
-                }
-                requestPermission(device)
+//                // Initiate permission request when device insertion is detected
+//                // If you want to open the specified camera, you need to override getDefaultCamera()
+//                if (mRequestPermission.get()) {
+//                    return
+//                }
+//                getDefaultCamera()?.apply {
+//                    if (vendorId == device.vendorId && productId == device.productId) {
+//                        LogUtil.d(TAG, "default camera pid: $productId, vid: $vendorId")
+//                        requestPermission(device)
+//                    }
+//                    return
+//                }
+//                requestPermission(device)
             }
 
             override fun onDetachDec(device: UsbDevice?) {
                 mCameraMap.remove(device?.deviceId)?.apply {
                     setUsbControlBlock(null)
                 }
-                mRequestPermission.set(false)
+//                mRequestPermission.set(false)
                 try {
                     mCurrentCamera?.cancel(true)
                     mCurrentCamera = null
@@ -110,11 +110,11 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
 
             override fun onDisConnectDec(device: UsbDevice?, ctrlBlock: USBMonitor.UsbControlBlock?) {
                 closeCamera()
-                mRequestPermission.set(false)
+//                mRequestPermission.set(false)
             }
 
             override fun onCancelDev(device: UsbDevice?) {
-                mRequestPermission.set(false)
+//                mRequestPermission.set(false)
                 try {
                     mCurrentCamera?.cancel(true)
                     mCurrentCamera = null
@@ -157,10 +157,10 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
      *
      * @param device see [UsbDevice]
      */
-    protected fun requestPermission(device: UsbDevice?) {
-        mRequestPermission.set(true)
-        mCameraClient?.requestPermission(device)
-    }
+//    protected fun requestPermission(device: UsbDevice?) {
+//        mRequestPermission.set(true)
+//        mCameraClient?.requestPermission(device)
+//    }
 
     /**
      * Generate camera
@@ -208,7 +208,7 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        requestPermission(usbDevice)
+//        requestPermission(usbDevice)
     }
 
     /**
