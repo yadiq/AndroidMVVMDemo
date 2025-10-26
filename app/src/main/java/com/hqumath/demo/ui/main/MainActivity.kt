@@ -2,11 +2,11 @@ package com.hqumath.demo.ui.main
 
 import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import android.view.View
 import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityMainBinding
-import com.hqumath.demo.ui.login.LoginActivity
-import com.hqumath.demo.ui.repos.MyReposActivity
+
 
 /**
  * ****************************************************************
@@ -20,21 +20,18 @@ class MainActivity : BaseActivity() {
     private lateinit var binding: ActivityMainBinding
 
     override fun initContentView(savedInstanceState: Bundle?): View {
-        //enableEdgeToEdge() 启用沉浸式布局
         binding = ActivityMainBinding.inflate(layoutInflater)
         return binding.root
     }
 
     override fun initListener() {
-        binding.btnLogin.setOnClickListener {
-            startActivity(Intent(mContext, LoginActivity::class.java))
-        }
-        binding.btnMyRepos.setOnClickListener {
-            startActivity(Intent(mContext, MyReposActivity::class.java))
-        }
     }
 
     override fun initData() {
+        val intent = Intent(Settings.ACTION_SOUND_SETTINGS)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
+        finish()
     }
 
     override fun initViewObservable() {

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AndroidDemo</string>
+    <string name="app_name">音量</string>
 
     <!--权限获取-->
     <string name="permission_title">提示</string>
