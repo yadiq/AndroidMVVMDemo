@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.hqumath.demo" //影响R类生成
-    compileSdk = 35 //调用最新API
+    compileSdk = 34 //调用最新API
 
     defaultConfig {
         applicationId = "com.hqumath.demo" //影响AndroidManifest中package

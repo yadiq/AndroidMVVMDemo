@@ -16,64 +16,76 @@ AndroidMVVM的精简版本，快速开发框架
 	(屏幕尺寸=对角线像素数/densitydpi=4.59英寸)
 4. 注意.xml文件预览仅支持部分densitydpi（例如：400 420 440 480等）
 
-## AGP与gradle、JDK、AS等版本的对应关系
-1. 概念 
-+ AGP (Android Gradle Plugin)
-在 Android Studio 工程根目录下的 build.gradle 构建脚本中配置
-+ Gradle (构建工具) 
-在工程根目录下的 gradle/wrapper/gradle-wrapper.properties 文件中配置
+## 当前版本选择(NDK27.0代码调试速度慢，所以降低版本)
+AGP8.3.2 Gradle8.4 NDK25.2.9519653 JDK17
+Kotlin2.1.20(K2编译器)
+C++版本 C++14
+CMake版本 3.22.1
 
-2. AGP与Gradle、JDK 的版本对应关系
-+ AGP           最小Gradle  最小JDK
-+ 8.10              8.11    17 #最新选择 AGP8.10.1 Gradle8.11.1 JDK17 Kotlin2.1.20(K2编译器)
-+ 8.4	            8.6	    17
-+ 8.3	            8.4   	17
-+ 8.2            	8.2	    17
-+ 8.1	            8.0	    17
-+ 8.0.0	            8.0	    17
-+ 7.4.2             7.6     11 #当前选择 AGP7.4.2 Gradle7.6 JDK17 Kotlin1.9.22
-+ 7.4.0	            7.5	    11
-+ 7.3.1             7.4     11
-+ 7.2               7.3.3   11
-+ 7.1.2             7.2     11
-+ 7.0               7.0     11
-+ 4.2.1             6.7.1    8 #之前选择 JDK11
-+ 4.1.0             6.5+     8
-+ 4.0.0             6.1.1+   8
-+ 3.6.0 - 3.6.4     5.6.4+   8
-+ 3.5.0 - 3.5.4     5.4.1+   8
-+ 3.4.0 - 3.4.3     5.1.1+   8
-+ 3.3.0 - 3.3.3     4.10.1+  7
+## 最新版本选择(最佳性能,最新版本的速度更快)
+AGP8.10.1 Gradle8.11.1 NDK27.0.12077973 JDK17
+Kotlin2.1.20(K2编译器)
+C++版本 C++14
+CMake版本 3.30.3
+
+## 旧版本选择(稳定兼容,长期支持版本)
+AGP7.4.2 Gradle7.6 NDK23.1 JDK11
+Kotlin1.9.22
+C++版本 C++14
+CMake版本 3.22.1
+
+## 工具说明
+AGP   构建系统层。构建系统插件，协调所有编译任务
+CMake 构建工具层。负责生成本地 (Native) C/C++ 的编译规则
+NDK   编译工具链层。编译 C/C++ 代码
+
+
+## AGP发布信息
+[官方文档](https://developer.android.google.cn/build/releases/past-releases/agp-8-10-0-release-notes)
+1. AGP8.10
+   子版本：8.10.0 8.10.1
+   默认版本：Gradle8.11.1 SDK35.0 NDK27.0 JDK17
+
+2. AGP8.3
+   子版本：8.3.0 8.3.1 8.3.2
+   默认版本：Gradle8.4 SDK34.0 NDK25.1 JDK17
+
+2. AGP8.0
+   子版本：8.0.0 8.0.1 8.0.2
+   默认版本：Gradle8.0 SDK30.0 NDK25.1 JDK17
+
+3. AGP7.4
+   子版本：7.4.0 7.4.1 7.4.2
+   默认版本：Gradle7.5 SDK30.0 NDK23.1 JDK11
+
+4. AGP7.0
+   子版本：7.0.0 7.0.1
+   默认版本：Gradle7.0.2 SDK30.0 NDK21.4 JDK11
+
+## 版本对应关系
 [官方文档](https://developer.android.google.cn/build/releases/gradle-plugin?hl=zh-cn#updating-gradle)
-[其它文档](https://blog.csdn.net/fxjzzyo/article/details/134390809)
+1. AGP 与 Gradle
++ AGP版本   最低Gradle版本
++ 8.13     8.13
++ 8.12     8.13
++ 8.11     8.13
++ 8.10     8.11.1  #当前选择8.10.1
+  ...
++ 8.6      8.7
++ 8.5      8.7
+  ...
++ 8.0      8.0
++ 7.4      7.5
+  ...
++ 7.0      7.0
++ 4.2.0+   6.7.1
 
-3. AS与AGP版本关系
-+ AndroidStudio          AGP
-+ Narwhal | 025.1.4      4.0–8.13
-+ Meerkat | 2024.3.2     3.2–8.10 当前版本 AS:2024.3.2 Patch1
-+ Ladybug | 2024.2.1     3.2–8.8
-+ Koala | 2024.1.1       3.2-8.5
-+ Jellyfish | 2023.3.1   3.2-8.4 
-+ Iguana | 2023.2.1	   3.2-8.3
-+ Hedgehog | 2023.1.1	   3.2-8.2
-+ Giraffe | 2022.3.1     3.2-8.1
-+ Flamingo | 2022.2.1    3.2-8.0
-+ ElectricEel | 2022.1.1 3.2-7.4
-+ Dolphin | 2021.3.1     3.2-7.3
-+ Chipmunk | 2021.2.1    3.2-7.2
-+ Bumblebee | 2021.1.1   3.2-7.1
-+ Arctic Fox | 2020.3.1  3.1-7.0
-
-4. android api 与 compileSdk
-Android版本 API版本
-   16.0 36
-   15.0 35
-   14.0 34
-   13.0 33
-   12L  32
-   12.0 31
-   11.0 30
-   10.0 29
-   9.0  28
-   8.1  27
-   8.0  26
+2. AGP 与 Android Studio 的版本对应关系
+   AS版本                              支持AGP版本
+   Narwhal 4 Feature Drop | 2025.1.4  4.0-8.13
+   Narwhal 3 Feature Drop | 2025.1.3  4.0-8.13
+   Narwhal Feature Drop | 2025.1.2	   4.0-8.12
+   Narwhal | 2025.1.1	               3.2-8.11
+   Meerkat Feature Drop | 2024.3.2	   3.2-8.10 #当前版本 2024.3.2 Patch 1
+   Meerkat | 2024.3.1	               3.2-8.9
+   Ladybug Feature Drop | 2024.2.2	   3.2-8.8
