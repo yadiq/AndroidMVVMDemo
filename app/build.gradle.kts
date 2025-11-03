@@ -63,7 +63,7 @@ android {
 dependencies {
     //implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     
-    //implementation(libs.androidx.core.ktx) //Kotlin 扩展库
+    implementation(libs.androidx.core.ktx) //Kotlin 扩展库
     implementation(libs.androidx.appcompat) //多语言切换需1.3.0及以上版本
     implementation(libs.androidx.datastore.preferences) //存储结构
     implementation(libs.material)
