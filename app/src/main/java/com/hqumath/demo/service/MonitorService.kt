@@ -1,16 +1,20 @@
 package com.hqumath.demo.service
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.hardware.camera2.CaptureRequest
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.util.Size
 import androidx.annotation.MainThread
+import androidx.camera.camera2.interop.Camera2Interop
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ExtendableBuilder
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
@@ -114,6 +118,7 @@ class MonitorService : Service() {
     }
 
     // 打开相机+预览
+    @SuppressLint("UnsafeOptInUsageError")
     fun openCameraPreview(surfaceProvider: SurfaceProvider) {
         if (useCamera) {
             closeCamera()
@@ -126,11 +131,16 @@ class MonitorService : Service() {
                 cameraProvider = cameraProviderFuture.get()
                 //获取指定摄像头
                 val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
                 //预览
-                val preview = Preview.Builder().build()
+                val previewBuilder = Preview.Builder()
+                configureCamera2Options(previewBuilder)
+                val preview = previewBuilder.build()
                 preview.setSurfaceProvider(surfaceProvider)
                 //拍照
-                imageCapture = ImageCapture.Builder()
+                val captureBuilder = ImageCapture.Builder()
+                configureCamera2Options(captureBuilder)
+                imageCapture = captureBuilder
                     .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                     //.setTargetRotation(Surface.ROTATION_90) //设置目标旋转
                     .setTargetResolution(
@@ -140,7 +150,7 @@ class MonitorService : Service() {
                 //确保先解绑所有用例。在主线程执行
                 cameraProvider?.unbindAll()
                 //将用例绑定到生命周期所有者 和 CameraProvider
-                cameraProvider?.bindToLifecycle(
+                val camera = cameraProvider?.bindToLifecycle(
                     lifecycleOwner,
                     cameraSelector,
                     preview,
@@ -159,6 +169,30 @@ class MonitorService : Service() {
         cameraProvider?.unbindAll()
         cameraProvider = null
         useCamera = false
+    }
+
+    //相机白平衡
+    @SuppressLint("UnsafeOptInUsageError")
+    private fun <T : androidx.camera.core.UseCase> configureCamera2Options(builder: ExtendableBuilder<T>) {
+        val extender = Camera2Interop.Extender(builder)
+
+//        extender.setCaptureRequestOption(
+//            CaptureRequest.CONTROL_AWB_MODE, //是否启用自动白平衡
+//            CaptureRequest.CONTROL_AWB_MODE_OFF //关闭自动白平衡（必须手动设置）
+//        )
+//        extender.setCaptureRequestOption(
+//            CaptureRequest.COLOR_CORRECTION_MODE, //白平衡模式处理方式
+//            CaptureRequest.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX //手动模式：由你提供 RGGB 增益
+//        )
+//        extender.setCaptureRequestOption(
+//            CaptureRequest.COLOR_CORRECTION_GAINS, //RGGB 增益矩阵（你的色温/白平衡参数）（R/G/G/B 四通道）
+//            CameraUtil.KelvinToRggb(3600) // 5000K → RGGB //3200 - 6400 都试一下
+//        )
+
+        extender.setCaptureRequestOption(
+            CaptureRequest.CONTROL_AWB_MODE, //是否启用自动白平衡
+            CaptureRequest.CONTROL_AWB_MODE_FLUORESCENT //CONTROL_AWB_MODE_FLUORESCENT 荧光灯
+        )
     }
 
     //////////////////////////////////////抓拍

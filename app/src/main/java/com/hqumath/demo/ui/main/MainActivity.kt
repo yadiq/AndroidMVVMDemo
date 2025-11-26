@@ -104,12 +104,12 @@ class MainActivity : BaseActivity() {
         //定时拍照
         lifecycleScope.launch(Dispatchers.IO) { //协程和生命周期能绑定
             repeatOnLifecycle(Lifecycle.State.CREATED) { //onCreate()后启动 -> onDestroy()时取消
-                delay(10_000L) //
-                while (isActive) { //协程作用域取消时自动退出
-                    Constant.monitorService?.quickCamera(0)
-                    Constant.monitorService?.quickCamera(1)
-                    delay(10_000L) //
-                }
+//                delay(10_000L) //
+//                while (isActive) { //协程作用域取消时自动退出
+//                    Constant.monitorService?.quickCamera(0)
+//                    Constant.monitorService?.quickCamera(1)
+//                    delay(10_000L) //
+//                }
             }
         }
     }
