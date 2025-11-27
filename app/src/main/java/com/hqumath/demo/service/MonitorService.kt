@@ -25,6 +25,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.hqumath.demo.R
 import com.hqumath.demo.app.Constant
+import com.hqumath.demo.utils.CameraUtil
 import com.hqumath.demo.utils.FileUtil
 import com.hqumath.demo.utils.LogUtil
 import kotlinx.coroutines.Dispatchers
@@ -144,7 +145,7 @@ class MonitorService : Service() {
                     .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                     //.setTargetRotation(Surface.ROTATION_90) //设置目标旋转
                     .setTargetResolution(
-                        Size(1080, 1920)
+                        Size(1920, 1080) //1080, 1920
                     ) //设置期望的最小输出分辨率。CameraX会选择不小于该值的最接近设备支持分辨率。提供一定程度的分辨率控制。如果不存在，则选择小于它的最接近分辨率。需通过 attachedSurfaceResolution 获取实际值
                     .build()
                 //确保先解绑所有用例。在主线程执行
@@ -185,14 +186,24 @@ class MonitorService : Service() {
 //            CaptureRequest.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX //手动模式：由你提供 RGGB 增益
 //        )
 //        extender.setCaptureRequestOption(
-//            CaptureRequest.COLOR_CORRECTION_GAINS, //RGGB 增益矩阵（你的色温/白平衡参数）（R/G/G/B 四通道）
-//            CameraUtil.KelvinToRggb(3600) // 5000K → RGGB //3200 - 6400 都试一下
+//            CaptureRequest.COLOR_CORRECTION_GAINS, //白平衡增益 RGGB 增益矩阵（你的色温/白平衡参数）（R/G/G/B 四通道）
+//            CameraUtil.KelvinToRggb(4000) // 5000K → RGGB //3200 - 6400 都试一下
 //        )
 
         extender.setCaptureRequestOption(
             CaptureRequest.CONTROL_AWB_MODE, //是否启用自动白平衡
-            CaptureRequest.CONTROL_AWB_MODE_FLUORESCENT //CONTROL_AWB_MODE_FLUORESCENT 荧光灯
+            CaptureRequest.CONTROL_AWB_MODE_AUTO //CONTROL_AWB_MODE_FLUORESCENT 荧光灯
         )
+
+//        CONTROL_AWB_MODE_OFF	0	关闭自动白平衡
+//        CONTROL_AWB_MODE_AUTO	1	自动白平衡（默认），自动检测色温
+//        CONTROL_AWB_MODE_INCANDESCENT	2	钨丝灯（暖黄光，约 2700K）
+//        CONTROL_AWB_MODE_WARM_FLUORESCENT	4	暖荧光灯（3000~3500K）
+//        CONTROL_AWB_MODE_FLUORESCENT	3	荧光灯（偏绿，约 4000K）
+//        CONTROL_AWB_MODE_TWILIGHT	7	黄昏（较低亮度，偏红，约 4000~4500K）
+//        CONTROL_AWB_MODE_DAYLIGHT	5	白天直射阳光（5000~5500K）
+//        CONTROL_AWB_MODE_CLOUDY_DAYLIGHT	6	多云阴天（6000~6500K）
+//        CONTROL_AWB_MODE_SHADE	8	阴影处（偏蓝，色温高，约 7000~7500K）
     }
 
     //////////////////////////////////////抓拍
