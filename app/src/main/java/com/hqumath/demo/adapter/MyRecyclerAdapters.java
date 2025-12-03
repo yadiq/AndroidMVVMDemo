@@ -25,4 +25,16 @@ public class MyRecyclerAdapters {
             holder.setText(R.id.tv_author, data.getOwner().getLogin());
         }
     }
+
+    //下拉选择弹窗
+    public static class BottomSelectAdapter extends BaseRecyclerAdapter<String> {
+        public BottomSelectAdapter(Context context, List<String> mData) {
+            super(context, mData, R.layout.recycler_item_bottom_select);
+        }
+
+        @Override
+        public void convert(BaseRecyclerViewHolder holder, int position) {
+            holder.setText(R.id.tvName, mData.get(position));
+        }
+    }
 }
