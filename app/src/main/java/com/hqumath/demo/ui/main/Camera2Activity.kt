@@ -3,12 +3,14 @@ package com.hqumath.demo.ui.main
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
+import android.media.ImageReader
 import android.os.Bundle
 import android.view.Surface
 import android.view.TextureView
@@ -17,12 +19,18 @@ import androidx.core.app.ActivityCompat
 import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityCamera2Binding
 import com.hqumath.demo.dialog.BottomSelectDialog
+import com.hqumath.demo.utils.CommonUtil
+import com.hqumath.demo.utils.FileUtil
+import java.io.File
 
 class Camera2Activity : BaseActivity() {
     private lateinit var binding: ActivityCamera2Binding
     private var cameraDevice: CameraDevice? = null
     private var cameraCaptureSession: CameraCaptureSession? = null
     private var previewRequestBuilder: CaptureRequest.Builder? = null
+    private var captureRequestBuilder: CaptureRequest.Builder? = null
+
+    private var imageReader: ImageReader? = null
 
     private var selectAreaDialog: BottomSelectDialog? = null
 
@@ -34,6 +42,7 @@ class Camera2Activity : BaseActivity() {
 
     override fun initListener() {
         binding.btnTakePicture.setOnClickListener {
+            capturePhoto()
         }
         binding.btnMode.setOnClickListener {
             if (cameraDevice == null)
@@ -141,10 +150,12 @@ class Camera2Activity : BaseActivity() {
 
             override fun onDisconnected(device: CameraDevice) {
                 device.close()
+                cameraDevice = null
             }
 
             override fun onError(device: CameraDevice, error: Int) {
                 device.close()
+                cameraDevice = null
             }
         }, null)
     }
@@ -152,21 +163,22 @@ class Camera2Activity : BaseActivity() {
     private fun startPreview() {
         if (cameraDevice == null)
             return
+        ////////////////////////预览////////////////////////
         val texture = binding.textureView.surfaceTexture!!
         texture.setDefaultBufferSize(1280, 720)
         val surface = Surface(texture)
-        //定义相机请求（预览、拍照）
+        //创建捕获请求
         previewRequestBuilder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
         previewRequestBuilder?.addTarget(surface)
         previewRequestBuilder?.set(
             CaptureRequest.CONTROL_AF_MODE, //自动对焦模式
             CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE //连续对焦，用于拍照。拍照预览时持续追踪焦点
         )
-        previewRequestBuilder?.set(
+        /*previewRequestBuilder?.set(
             CaptureRequest.CONTROL_AE_MODE, //曝光策略
             CaptureRequest.CONTROL_AE_MODE_ON //开启自动曝光（默认模式），自动调节亮度
             //CONTROL_AE_MODE_OFF 关闭自动曝光，需要手动设置曝光时间、增益和 ISO
-        )
+        )*/
         previewRequestBuilder?.set(
             CaptureRequest.CONTROL_AWB_MODE, //白平衡模式
 //            CaptureRequest.CONTROL_AWB_MODE_OFF    //0	关闭自动白平衡，手动设置增益
@@ -180,19 +192,30 @@ class Camera2Activity : BaseActivity() {
 //            CaptureRequest.CONTROL_AWB_MODE_SHADE	//8	阴影（偏蓝，色温高，约 7000~7500K）
         )
         //设置色温
-//        previewRequestBuilder.set(
-//            CaptureRequest.COLOR_CORRECTION_MODE, //白平衡模式处理方式
-//            CaptureRequest.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX //手动模式：由你提供 RGGB 增益
-//        )
-//        previewRequestBuilder.set(
-//            CaptureRequest.COLOR_CORRECTION_GAINS, //白平衡增益 RGGB 增益矩阵（你的色温/白平衡参数）（R/G/G/B 四通道）
-//            CameraUtil.KelvinToRggb(3200) // 5000K → RGGB //3200 - 6400 都试一下
-//        )
-
+        /*previewRequestBuilder.set(
+            CaptureRequest.COLOR_CORRECTION_MODE, //白平衡模式处理方式
+            CaptureRequest.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX //手动模式：由你提供 RGGB 增益
+        )
+        previewRequestBuilder.set(
+            CaptureRequest.COLOR_CORRECTION_GAINS, //白平衡增益 RGGB 增益矩阵（你的色温/白平衡参数）（R/G/G/B 四通道）
+            CameraUtil.KelvinToRggb(3200) // 5000K → RGGB //3200 - 6400 都试一下
+        )*/
+        ////////////////////////拍照////////////////////////
+        imageReader = ImageReader.newInstance(1920, 1080, ImageFormat.JPEG, 1)
+        imageReader!!.setOnImageAvailableListener({ reader ->
+            val image = reader.acquireLatestImage()
+            // 保存图片
+            val buffer = image.planes[0].buffer
+            val bytes = ByteArray(buffer.remaining())
+            buffer.get(bytes)
+            FileUtil.getExternalFile("picture", "${System.currentTimeMillis()}.jpg").writeBytes(bytes)
+            //File("/sdcard/DCIM/camera2_photo.jpg").writeBytes(bytes)
+            image.close()
+            CommonUtil.toast("拍照成功")
+        }, null)
 
         //Session会话管理一组相机请求
-        cameraDevice!!.createCaptureSession(
-            listOf(surface),
+        cameraDevice!!.createCaptureSession(listOf(surface, imageReader!!.surface),
             object : CameraCaptureSession.StateCallback() {
                 override fun onConfigured(session: CameraCaptureSession) {
                     cameraCaptureSession = session
@@ -203,5 +226,26 @@ class Camera2Activity : BaseActivity() {
             },
             null
         )
+    }
+
+    private fun capturePhoto() {
+        if (cameraDevice == null)
+            return
+        val curMode = previewRequestBuilder!!.get<Int>(CaptureRequest.CONTROL_AWB_MODE)
+
+        //创建捕获请求
+        captureRequestBuilder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
+        captureRequestBuilder?.addTarget(imageReader!!.surface)
+        captureRequestBuilder?.set(
+            CaptureRequest.CONTROL_AWB_MODE, //白平衡模式
+            curMode
+        )
+        captureRequestBuilder?.set(
+            CaptureRequest.CONTROL_AF_MODE, //自动对焦模式
+            CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE //连续对焦，用于拍照。拍照预览时持续追踪焦点
+        )
+        cameraCaptureSession?.capture(captureRequestBuilder!!.build(), null, null)
+
+
     }
 }
