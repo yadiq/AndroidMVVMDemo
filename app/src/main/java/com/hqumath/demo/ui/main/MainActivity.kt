@@ -48,7 +48,7 @@ class MainActivity : BaseActivity() {
             startActivity(Intent(mContext, TakePictureActivity::class.java))
         }
         binding.btnMyRepos.setOnClickListener {
-            startActivity(Intent(mContext, MyReposActivity::class.java))
+            startActivity(Intent(mContext, Camera2Activity::class.java))
         }
     }
 

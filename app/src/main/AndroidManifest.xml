@@ -76,6 +76,12 @@
             android:exported="false"
             android:screenOrientation="portrait"/>
 
+        <activity
+            android:name="com.hqumath.demo.ui.main.Camera2Activity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|navigation|keyboard|keyboardHidden|touchscreen|fontScale|locale"
+            android:exported="false"
+            android:screenOrientation="portrait"/>
+
         <!--前台服务-->
         <service
             android:name="com.hqumath.demo.service.MonitorService"

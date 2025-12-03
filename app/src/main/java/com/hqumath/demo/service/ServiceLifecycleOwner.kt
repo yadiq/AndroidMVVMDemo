@@ -13,7 +13,9 @@ class ServiceLifecycleOwner : LifecycleOwner {
         lifecycleRegistry.currentState = Lifecycle.State.CREATED
     }
 
-    override fun getLifecycle(): Lifecycle = lifecycleRegistry
+    override val lifecycle: Lifecycle
+        get() = lifecycleRegistry
+    //override fun getLifecycle(): Lifecycle = lifecycleRegistry
 
     /** 服务启动时调用 */
     fun handleServiceStart() {
