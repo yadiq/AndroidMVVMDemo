@@ -9,9 +9,12 @@ import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
+import android.hardware.camera2.params.StreamConfigurationMap
 import android.media.ImageReader
 import android.os.Bundle
+import android.util.Size
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
@@ -21,11 +24,13 @@ import com.hqumath.demo.databinding.ActivityCamera2Binding
 import com.hqumath.demo.dialog.BottomSelectDialog
 import com.hqumath.demo.utils.CommonUtil
 import com.hqumath.demo.utils.FileUtil
-import java.io.File
+import com.hqumath.demo.utils.LogUtil
+
 
 class Camera2Activity : BaseActivity() {
     private lateinit var binding: ActivityCamera2Binding
     private var cameraDevice: CameraDevice? = null
+    private var characteristics: CameraCharacteristics? = null //相机特性
     private var cameraCaptureSession: CameraCaptureSession? = null
     private var previewRequestBuilder: CaptureRequest.Builder? = null
     private var captureRequestBuilder: CaptureRequest.Builder? = null
@@ -48,28 +53,14 @@ class Camera2Activity : BaseActivity() {
             if (cameraDevice == null)
                 return@setOnClickListener
             //获取支持的白平衡模式数组
-            val manager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
-            val characteristics = manager.getCameraCharacteristics(cameraDevice!!.id)
-            val awbModes: IntArray? =
-                characteristics.get(CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES)
-            if (awbModes == null)
-                return@setOnClickListener
+            val awbModes: IntArray =
+                characteristics?.get(CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES) ?: IntArray(
+                    0
+                )
             //获取名称
             val names = awbModes.map {
-                when (it) {
-                    CaptureRequest.CONTROL_AWB_MODE_OFF -> "OFF"
-                    CaptureRequest.CONTROL_AWB_MODE_AUTO -> "自动"
-                    CaptureRequest.CONTROL_AWB_MODE_DAYLIGHT -> "日光"
-                    CaptureRequest.CONTROL_AWB_MODE_CLOUDY_DAYLIGHT -> "阴天日光"
-                    CaptureRequest.CONTROL_AWB_MODE_FLUORESCENT -> "荧光灯"
-                    CaptureRequest.CONTROL_AWB_MODE_INCANDESCENT -> "白炽灯"
-                    CaptureRequest.CONTROL_AWB_MODE_SHADE -> "阴影"
-                    CaptureRequest.CONTROL_AWB_MODE_TWILIGHT -> "黄昏"
-                    CaptureRequest.CONTROL_AWB_MODE_WARM_FLUORESCENT -> "暖荧光灯"
-                    else -> "UNKNOWN($it)"
-                }
+                getModeDescription(it)
             }
-
             if (selectAreaDialog == null) {
                 selectAreaDialog = BottomSelectDialog(
                     context = mContext,
@@ -80,7 +71,11 @@ class Camera2Activity : BaseActivity() {
                             return@BottomSelectDialog
                         val mode = awbModes[position]
                         previewRequestBuilder!!.set(CaptureRequest.CONTROL_AWB_MODE, mode) //白平衡模式
-                        cameraCaptureSession!!.setRepeatingRequest(previewRequestBuilder!!.build(), null, null)
+                        cameraCaptureSession!!.setRepeatingRequest(
+                            previewRequestBuilder!!.build(),
+                            null,
+                            null
+                        )
                     },
                     negativeAction = {}
                 )
@@ -132,6 +127,9 @@ class Camera2Activity : BaseActivity() {
             manager.getCameraCharacteristics(it)
                 .get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK
         }
+        //相机特性
+        characteristics = manager.getCameraCharacteristics(cameraId)
+        getCharacteristics()
         //权限
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -165,7 +163,7 @@ class Camera2Activity : BaseActivity() {
             return
         ////////////////////////预览////////////////////////
         val texture = binding.textureView.surfaceTexture!!
-        texture.setDefaultBufferSize(1280, 720)
+        texture.setDefaultBufferSize(1920, 1080)
         val surface = Surface(texture)
         //创建捕获请求
         previewRequestBuilder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
@@ -201,21 +199,23 @@ class Camera2Activity : BaseActivity() {
             CameraUtil.KelvinToRggb(3200) // 5000K → RGGB //3200 - 6400 都试一下
         )*/
         ////////////////////////拍照////////////////////////
-        imageReader = ImageReader.newInstance(1920, 1080, ImageFormat.JPEG, 1)
+        imageReader = ImageReader.newInstance(1920, 1080, ImageFormat.JPEG, 2) //2最大缓冲区数量（队列大小）
         imageReader!!.setOnImageAvailableListener({ reader ->
             val image = reader.acquireLatestImage()
             // 保存图片
             val buffer = image.planes[0].buffer
             val bytes = ByteArray(buffer.remaining())
             buffer.get(bytes)
-            FileUtil.getExternalFile("picture", "${System.currentTimeMillis()}.jpg").writeBytes(bytes)
+            FileUtil.getExternalFile("picture", "${System.currentTimeMillis()}.jpg")
+                .writeBytes(bytes)
             //File("/sdcard/DCIM/camera2_photo.jpg").writeBytes(bytes)
             image.close()
             CommonUtil.toast("拍照成功")
         }, null)
 
         //Session会话管理一组相机请求
-        cameraDevice!!.createCaptureSession(listOf(surface, imageReader!!.surface),
+        cameraDevice!!.createCaptureSession(
+            listOf(surface, imageReader!!.surface),
             object : CameraCaptureSession.StateCallback() {
                 override fun onConfigured(session: CameraCaptureSession) {
                     cameraCaptureSession = session
@@ -234,7 +234,8 @@ class Camera2Activity : BaseActivity() {
         val curMode = previewRequestBuilder!!.get<Int>(CaptureRequest.CONTROL_AWB_MODE)
 
         //创建捕获请求
-        captureRequestBuilder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
+        captureRequestBuilder =
+            cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
         captureRequestBuilder?.addTarget(imageReader!!.surface)
         captureRequestBuilder?.set(
             CaptureRequest.CONTROL_AWB_MODE, //白平衡模式
@@ -245,7 +246,41 @@ class Camera2Activity : BaseActivity() {
             CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE //连续对焦，用于拍照。拍照预览时持续追踪焦点
         )
         cameraCaptureSession?.capture(captureRequestBuilder!!.build(), null, null)
+    }
 
+    //////////////相机特性
+    private fun getCharacteristics() {
+        //获取支持的白平衡模式数组
+        val awbModes: IntArray =
+            characteristics?.get(CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES) ?: IntArray(0)
+        for (mode in awbModes) {
+            LogUtil.d("白平衡模式: ${getModeDescription(mode)}")
+        }
 
+        //获取支持的所有分辨率
+        // 预览SurfaceTexture.class 拍照ImageFormat.JPEG 录像MediaRecorder.class
+        val streamMap: StreamConfigurationMap? =
+            characteristics?.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+        val sizes: Array<Size> =
+            streamMap?.getOutputSizes(SurfaceTexture::class.java) ?: emptyArray()
+        sizes.forEach {
+            LogUtil.d("分辨率: ${it.width}x${it.height}")
+        }
+    }
+
+    // 获取白平衡模式描述
+    private fun getModeDescription(awbMode: Int): String {
+        when (awbMode) {
+            CameraMetadata.CONTROL_AWB_MODE_OFF -> return "0白平衡关闭，使用固定色温"
+            CameraMetadata.CONTROL_AWB_MODE_AUTO -> return "1自动白平衡，相机自动调整"
+            CameraMetadata.CONTROL_AWB_MODE_INCANDESCENT -> return "2白炽灯模式，适用于室内暖光"
+            CameraMetadata.CONTROL_AWB_MODE_FLUORESCENT -> return "3荧光灯模式，适用于普通荧光灯"
+            CameraMetadata.CONTROL_AWB_MODE_WARM_FLUORESCENT -> return "4暖色荧光灯模式"
+            CameraMetadata.CONTROL_AWB_MODE_DAYLIGHT -> return "5日光模式，适用于室外晴天"
+            CameraMetadata.CONTROL_AWB_MODE_CLOUDY_DAYLIGHT -> return "6阴天模式，适用于室外阴天"
+            CameraMetadata.CONTROL_AWB_MODE_TWILIGHT -> return "7黄昏模式，适用于日出日落"
+            CameraMetadata.CONTROL_AWB_MODE_SHADE -> return "8阴影模式，适用于阴影区域"
+            else -> return "未知的白平衡模式"
+        }
     }
 }
