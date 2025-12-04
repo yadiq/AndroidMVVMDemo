@@ -161,9 +161,15 @@ class Camera2Activity : BaseActivity() {
     private fun startPreview() {
         if (cameraDevice == null)
             return
+//        val width = 1920
+//        val height = 1080
+        val width = 1280
+        val height = 720
+//        val width = 640
+//        val height = 480
         ////////////////////////预览////////////////////////
         val texture = binding.textureView.surfaceTexture!!
-        texture.setDefaultBufferSize(1920, 1080)
+        texture.setDefaultBufferSize(width, height)
         val surface = Surface(texture)
         //创建捕获请求
         previewRequestBuilder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
@@ -199,7 +205,7 @@ class Camera2Activity : BaseActivity() {
             CameraUtil.KelvinToRggb(3200) // 5000K → RGGB //3200 - 6400 都试一下
         )*/
         ////////////////////////拍照////////////////////////
-        imageReader = ImageReader.newInstance(1920, 1080, ImageFormat.JPEG, 2) //2最大缓冲区数量（队列大小）
+        imageReader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 2) //2最大缓冲区数量（队列大小）
         imageReader!!.setOnImageAvailableListener({ reader ->
             val image = reader.acquireLatestImage()
             // 保存图片
