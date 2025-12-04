@@ -174,8 +174,16 @@ class Camera2Activity : BaseActivity() {
         //创建捕获请求
         previewRequestBuilder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
         previewRequestBuilder?.addTarget(surface)
+        captureRequestBuilder?.set(
+            CaptureRequest.CONTROL_MODE, //自动控制模式。自动曝光（AE）、自动白平衡（AWB）、自动对焦（AF）
+            //CameraMetadata.CONTROL_MODE_OFF //0关闭自动控制，用户可以手动设置 AE/AWB/AF 等参数
+            CameraMetadata.CONTROL_MODE_AUTO //1全自动模式，AE/AWB/AF 由相机自动控制
+            //CameraMetadata.CONTROL_MODE_USE_SCENE_MODE //2使用 Scene Mode（场景模式）来控制 AE/AWB/AF，配合 CONTROL_SCENE_MODE
+            //CameraMetadata.CONTROL_MODE_OFF_KEEP_STATE //3关闭自动控制，但保留相机状态（部分厂商扩展，不一定在所有设备上可用）
+        )
         previewRequestBuilder?.set(
             CaptureRequest.CONTROL_AF_MODE, //自动对焦模式
+            //CONTROL_AF_MODE_OFF
             CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE //连续对焦，用于拍照。拍照预览时持续追踪焦点
         )
         /*previewRequestBuilder?.set(
@@ -243,6 +251,13 @@ class Camera2Activity : BaseActivity() {
         captureRequestBuilder =
             cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
         captureRequestBuilder?.addTarget(imageReader!!.surface)
+        captureRequestBuilder?.set(
+            CaptureRequest.CONTROL_MODE, //自动控制模式。自动曝光（AE）、自动白平衡（AWB）、自动对焦（AF）
+            //CameraMetadata.CONTROL_MODE_OFF //0关闭自动控制，用户可以手动设置 AE/AWB/AF 等参数
+            CameraMetadata.CONTROL_MODE_AUTO //1全自动模式，AE/AWB/AF 由相机自动控制
+            //CameraMetadata.CONTROL_MODE_USE_SCENE_MODE //2使用 Scene Mode（场景模式）来控制 AE/AWB/AF，配合 CONTROL_SCENE_MODE
+            //CameraMetadata.CONTROL_MODE_OFF_KEEP_STATE //3关闭自动控制，但保留相机状态（部分厂商扩展，不一定在所有设备上可用）
+        )
         captureRequestBuilder?.set(
             CaptureRequest.CONTROL_AWB_MODE, //白平衡模式
             curMode
