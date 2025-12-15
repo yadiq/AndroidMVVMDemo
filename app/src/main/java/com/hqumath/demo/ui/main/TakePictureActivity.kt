@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.util.Size
 import android.view.View
 import androidx.camera.core.ImageCapture
+import androidx.camera.view.PreviewView
 import androidx.lifecycle.lifecycleScope
 import com.hqumath.demo.app.Constant
 import com.hqumath.demo.base.BaseActivity
@@ -48,6 +49,10 @@ class TakePictureActivity : BaseActivity() {
 
     override fun onStart() {
         super.onStart()
+        //COMPATIBLE 模式使用 TextureView 渲染，旋转问题更可控
+        //PERFORMANCE 模式使用 SurfaceView，部分设备可能旋转错乱
+        binding.previewView.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+
         Constant.isCameraTest = true
         Constant.monitorService?.openCameraPreview(binding.previewView.surfaceProvider)
     }

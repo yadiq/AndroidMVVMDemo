@@ -68,8 +68,6 @@ class MainActivity : BaseActivity() {
                 CommonUtil.toast("请您到设置页面手动授权")
                 //PermissionUtil.showSettingDialog(mContext, permissions) //自定义弹窗 去设置界面
             }.start()
-
-        binding.btnMyRepos.performClick()
     }
 
     override fun initViewObservable() {

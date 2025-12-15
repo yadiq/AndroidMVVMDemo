@@ -25,7 +25,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.hqumath.demo.R
 import com.hqumath.demo.app.Constant
-import com.hqumath.demo.utils.CameraUtil
 import com.hqumath.demo.utils.FileUtil
 import com.hqumath.demo.utils.LogUtil
 import kotlinx.coroutines.Dispatchers
@@ -132,9 +131,8 @@ class MonitorService : Service() {
                 cameraProvider = cameraProviderFuture.get()
                 //获取指定摄像头
                 val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-                //预览
                 val previewBuilder = Preview.Builder()
+                    //.setTargetRotation(Surface.ROTATION_90) //设置目标旋转
                 configureCamera2Options(previewBuilder)
                 val preview = previewBuilder.build()
                 preview.setSurfaceProvider(surfaceProvider)
