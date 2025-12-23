@@ -36,7 +36,7 @@ class TakePictureActivity : BaseActivity() {
             }
 
             //分辨率
-            val sizes = getSupportedPictureSizes(mContext, CameraCharacteristics.LENS_FACING_BACK)
+            val sizes = getSupportedPictureSizes(mContext, CameraCharacteristics.LENS_FACING_FRONT)
             sizes.forEach { LogUtil.d("MonitorService", "JPEG: ${it.width}x${it.height}") }
         }
     }

@@ -41,7 +41,7 @@ class Camera2Activity : BaseActivity() {
     private var imageReader: ImageReader? = null
 
     private var selectAreaDialog: BottomSelectDialog? = null
-    private val previewSize = Size(1280, 720) //预览分辨率
+    private val previewSize = Size(1280, 720) //预览分辨率 1920x1080 1280x720 640x480
 
     override fun initContentView(savedInstanceState: Bundle?): View {
         binding = ActivityCamera2Binding.inflate(layoutInflater)
@@ -95,7 +95,7 @@ class Camera2Activity : BaseActivity() {
                 width: Int,
                 height: Int,
             ) {
-//                configureTransform(width,height)
+                configureTransform(width,height)
                 openCamera()
             }
 
@@ -104,7 +104,7 @@ class Camera2Activity : BaseActivity() {
                 width: Int,
                 height: Int,
             ) {
-//                configureTransform(width,height)
+                configureTransform(width,height)
             }
 
             override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean = false
@@ -165,12 +165,6 @@ class Camera2Activity : BaseActivity() {
     private fun startPreview() {
         if (cameraDevice == null)
             return
-//        val width = 1920
-//        val height = 1080
-//        val width = 1280
-//        val height = 720
-//        val width = 640
-//        val height = 480
         ////////////////////////预览////////////////////////
         val texture = binding.textureView.surfaceTexture!!
         texture.setDefaultBufferSize(previewSize.width, previewSize.height)
@@ -224,8 +218,9 @@ class Camera2Activity : BaseActivity() {
             val buffer = image.planes[0].buffer
             val bytes = ByteArray(buffer.remaining())
             buffer.get(bytes)
-            FileUtil.getExternalFile("picture", "${System.currentTimeMillis()}.jpg")
-                .writeBytes(bytes)
+            val file = FileUtil.getExternalFile("picture", "${System.currentTimeMillis()}.jpg")
+            file.writeBytes(bytes)
+            LogUtil.d("拍照  ${file.absolutePath}")
             //File("/sdcard/DCIM/camera2_photo.jpg").writeBytes(bytes)
             image.close()
             CommonUtil.toast("拍照成功")
@@ -252,9 +247,12 @@ class Camera2Activity : BaseActivity() {
         val curMode = previewRequestBuilder!!.get<Int>(CaptureRequest.CONTROL_AWB_MODE)
 
         //创建捕获请求
-        captureRequestBuilder =
-            cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
+        captureRequestBuilder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
         captureRequestBuilder?.addTarget(imageReader!!.surface)
+        captureRequestBuilder?.set(
+            CaptureRequest.JPEG_ORIENTATION,
+            90 //拍照旋转
+        )
         captureRequestBuilder?.set(
             CaptureRequest.CONTROL_MODE, //自动控制模式。自动曝光（AE）、自动白平衡（AWB）、自动对焦（AF）
             //CameraMetadata.CONTROL_MODE_OFF //0关闭自动控制，用户可以手动设置 AE/AWB/AF 等参数
@@ -278,43 +276,30 @@ class Camera2Activity : BaseActivity() {
         viewWidth: Int,
         viewHeight: Int
     ) {
-        //val rotation = windowManager.defaultDisplay.rotation
         val rotation = Surface.ROTATION_270
         val matrix = Matrix()
 
-        val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat())
-        val bufferRect = RectF(
-            0f,
-            0f,
-            previewSize.height.toFloat(),
-            previewSize.width.toFloat()
-        )
+        if (rotation == Surface.ROTATION_270) {
+            val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat()) //预览区域 16:9 356x200
+            val bufferRect = RectF(0f, 0f, previewSize.width.toFloat(), previewSize.height.toFloat()) //实际画面 1280x720
+            LogUtil.d("预览区域 width=${viewRect.width()} height=${viewRect.height()}")
+            LogUtil.d("实际画面 width=${bufferRect.width()} height=${bufferRect.height()}")
+            val centerX = viewRect.centerX()
+            val centerY = viewRect.centerY()
 
-        val centerX = viewRect.centerX()
-        val centerY = viewRect.centerY()
+            //坐标映射
+            bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY())
+            matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL) //坐标映射。FILL 填满,允许裁剪,不留黑边
 
-        if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) {
-            bufferRect.offset(
-                centerX - bufferRect.centerX(),
-                centerY - bufferRect.centerY()
-            )
-
-            matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL)
-
-            val scale = max(
-                viewHeight.toFloat() / previewSize.height,
-                viewWidth.toFloat() / previewSize.width
-            )
+            //画面缩放
+            val scale = max(viewHeight.toFloat() / previewSize.width, viewWidth.toFloat() / previewSize.height)
             matrix.postScale(scale, scale, centerX, centerY)
 
-            val degree = when (rotation) {
-                Surface.ROTATION_90 -> 90f
-                Surface.ROTATION_270 -> 270f
-                else -> 0f
-            }
-            matrix.postRotate(degree, centerX, centerY)
-        }
+            //画面旋转
+            matrix.postRotate(270f, centerX, centerY)
+        } else if (rotation == Surface.ROTATION_0) {
 
+        }
         binding.textureView.setTransform(matrix)
     }
 
