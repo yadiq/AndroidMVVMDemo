@@ -8,8 +8,8 @@
 
     <TextureView
         android:id="@+id/textureView"
-        android:layout_width="360dp"
-        android:layout_height="640dp" />
+        android:layout_width="640dp"
+        android:layout_height="360dp" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnTakePicture"

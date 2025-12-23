@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.ImageFormat
+import android.graphics.Matrix
+import android.graphics.RectF
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
@@ -25,6 +27,7 @@ import com.hqumath.demo.dialog.BottomSelectDialog
 import com.hqumath.demo.utils.CommonUtil
 import com.hqumath.demo.utils.FileUtil
 import com.hqumath.demo.utils.LogUtil
+import kotlin.math.max
 
 
 class Camera2Activity : BaseActivity() {
@@ -38,7 +41,7 @@ class Camera2Activity : BaseActivity() {
     private var imageReader: ImageReader? = null
 
     private var selectAreaDialog: BottomSelectDialog? = null
-
+    private val previewSize = Size(1280, 720) //预览分辨率
 
     override fun initContentView(savedInstanceState: Bundle?): View {
         binding = ActivityCamera2Binding.inflate(layoutInflater)
@@ -92,6 +95,7 @@ class Camera2Activity : BaseActivity() {
                 width: Int,
                 height: Int,
             ) {
+//                configureTransform(width,height)
                 openCamera()
             }
 
@@ -100,6 +104,7 @@ class Camera2Activity : BaseActivity() {
                 width: Int,
                 height: Int,
             ) {
+//                configureTransform(width,height)
             }
 
             override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean = false
@@ -124,8 +129,7 @@ class Camera2Activity : BaseActivity() {
         //获取摄像头列表和属性
         val manager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
         val cameraId = manager.cameraIdList.first { //返回第一个 条件为 true 的元素
-            manager.getCameraCharacteristics(it)
-                .get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK
+            manager.getCameraCharacteristics(it).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT //LENS_FACING_BACK
         }
         //相机特性
         characteristics = manager.getCameraCharacteristics(cameraId)
@@ -163,13 +167,13 @@ class Camera2Activity : BaseActivity() {
             return
 //        val width = 1920
 //        val height = 1080
-        val width = 1280
-        val height = 720
+//        val width = 1280
+//        val height = 720
 //        val width = 640
 //        val height = 480
         ////////////////////////预览////////////////////////
         val texture = binding.textureView.surfaceTexture!!
-        texture.setDefaultBufferSize(width, height)
+        texture.setDefaultBufferSize(previewSize.width, previewSize.height)
         val surface = Surface(texture)
         //创建捕获请求
         previewRequestBuilder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
@@ -213,7 +217,7 @@ class Camera2Activity : BaseActivity() {
             CameraUtil.KelvinToRggb(3200) // 5000K → RGGB //3200 - 6400 都试一下
         )*/
         ////////////////////////拍照////////////////////////
-        imageReader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 2) //2最大缓冲区数量（队列大小）
+        imageReader = ImageReader.newInstance(previewSize.width, previewSize.height, ImageFormat.JPEG, 2) //2最大缓冲区数量（队列大小）
         imageReader!!.setOnImageAvailableListener({ reader ->
             val image = reader.acquireLatestImage()
             // 保存图片
@@ -269,23 +273,67 @@ class Camera2Activity : BaseActivity() {
         cameraCaptureSession?.capture(captureRequestBuilder!!.build(), null, null)
     }
 
+    //预览旋转
+    private fun configureTransform(
+        viewWidth: Int,
+        viewHeight: Int
+    ) {
+        //val rotation = windowManager.defaultDisplay.rotation
+        val rotation = Surface.ROTATION_270
+        val matrix = Matrix()
+
+        val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat())
+        val bufferRect = RectF(
+            0f,
+            0f,
+            previewSize.height.toFloat(),
+            previewSize.width.toFloat()
+        )
+
+        val centerX = viewRect.centerX()
+        val centerY = viewRect.centerY()
+
+        if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) {
+            bufferRect.offset(
+                centerX - bufferRect.centerX(),
+                centerY - bufferRect.centerY()
+            )
+
+            matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL)
+
+            val scale = max(
+                viewHeight.toFloat() / previewSize.height,
+                viewWidth.toFloat() / previewSize.width
+            )
+            matrix.postScale(scale, scale, centerX, centerY)
+
+            val degree = when (rotation) {
+                Surface.ROTATION_90 -> 90f
+                Surface.ROTATION_270 -> 270f
+                else -> 0f
+            }
+            matrix.postRotate(degree, centerX, centerY)
+        }
+
+        binding.textureView.setTransform(matrix)
+    }
+
+
+
     //////////////相机特性
     private fun getCharacteristics() {
         //获取支持的白平衡模式数组
-        val awbModes: IntArray =
-            characteristics?.get(CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES) ?: IntArray(0)
+        val awbModes: IntArray = characteristics?.get(CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES) ?: IntArray(0)
         for (mode in awbModes) {
             LogUtil.d("白平衡模式: ${getModeDescription(mode)}")
         }
 
         //获取支持的所有分辨率
         // 预览SurfaceTexture.class 拍照ImageFormat.JPEG 录像MediaRecorder.class
-        val streamMap: StreamConfigurationMap? =
-            characteristics?.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
-        val sizes: Array<Size> =
-            streamMap?.getOutputSizes(SurfaceTexture::class.java) ?: emptyArray()
+        val streamMap: StreamConfigurationMap? = characteristics?.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+        val sizes: Array<Size> = streamMap?.getOutputSizes(SurfaceTexture::class.java) ?: emptyArray()
         sizes.forEach {
-            LogUtil.d("分辨率: ${it.width}x${it.height}")
+            LogUtil.d("预览分辨率: ${it.width}x${it.height}")
         }
     }
 

@@ -130,7 +130,7 @@ class MonitorService : Service() {
                 //CameraProvider
                 cameraProvider = cameraProviderFuture.get()
                 //获取指定摄像头
-                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+                val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA //DEFAULT_BACK_CAMERA
                 val previewBuilder = Preview.Builder()
                     //.setTargetRotation(Surface.ROTATION_90) //设置目标旋转
                 configureCamera2Options(previewBuilder)
