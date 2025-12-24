@@ -280,21 +280,37 @@ class Camera2Activity : BaseActivity() {
         val matrix = Matrix()
 
         if (rotation == Surface.ROTATION_270) {
-            val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat()) //预览区域 16:9 356x200
-            val bufferRect = RectF(0f, 0f, previewSize.width.toFloat(), previewSize.height.toFloat()) //实际画面 1280x720
-            LogUtil.d("预览区域 width=${viewRect.width()} height=${viewRect.height()}")
-            LogUtil.d("实际画面 width=${bufferRect.width()} height=${bufferRect.height()}")
-            val centerX = viewRect.centerX()
-            val centerY = viewRect.centerY()
+            //画面的尺寸
+            val previewWidth = previewSize.width
+            val previewHeight = previewSize.height
+            //旋转后的尺寸
+            val rotatedWidth = if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) {
+                previewHeight
+            } else {
+                previewWidth
+            }
+            val rotatedHeight = if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) {
+                previewWidth
+            } else {
+                previewHeight
+            }
+            LogUtil.d("预览区域 width=${viewWidth} height=${viewHeight}")
+            LogUtil.d("画面尺寸 width=${previewWidth} height=${previewHeight}")
+            LogUtil.d("旋转后尺寸 width=${rotatedWidth} height=${rotatedHeight}")
 
-            //坐标映射
-            bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY())
-            matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL) //坐标映射。FILL 填满,允许裁剪,不留黑边
+            //坐标映射 当比例不一致时，告诉系统你要怎么缩放、怎么对齐
+//            val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat()) //预览区域 16:9 356x200
+//            val bufferRect = RectF(0f, 0f, previewSize.width.toFloat(), previewSize.height.toFloat()) //画面的尺寸 1280x720
+//            bufferRect.offset(viewRect.centerX() - bufferRect.centerX(), viewRect.centerY() - bufferRect.centerY())
+//            matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL) //坐标映射。FILL 填满,允许裁剪,不留黑边; CENTER 完整画面,不裁剪,有黑边
 
+
+            val centerX = viewWidth.toFloat() / 2
+            val centerY = viewHeight.toFloat() / 2
             //画面缩放
-            val scale = max(viewHeight.toFloat() / previewSize.width, viewWidth.toFloat() / previewSize.height)
+            val scale = max(viewHeight.toFloat() / rotatedHeight, viewWidth.toFloat() / rotatedWidth)
             matrix.postScale(scale, scale, centerX, centerY)
-
+            LogUtil.d("缩放比例 $scale")
             //画面旋转
             matrix.postRotate(270f, centerX, centerY)
         } else if (rotation == Surface.ROTATION_0) {
