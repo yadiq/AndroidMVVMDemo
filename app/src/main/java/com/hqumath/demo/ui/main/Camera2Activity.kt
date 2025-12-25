@@ -129,7 +129,7 @@ class Camera2Activity : BaseActivity() {
         val manager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
         val cameraId = manager.cameraIdList.first { //返回第一个 条件为 true 的元素
             manager.getCameraCharacteristics(it)
-                .get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK //LENS_FACING_BACK TODO
+                .get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT //LENS_FACING_BACK TODO
         }
         //相机特性
         characteristics = manager.getCameraCharacteristics(cameraId)
@@ -304,6 +304,14 @@ class Camera2Activity : BaseActivity() {
         val centerX = viewWidth.toFloat() / 2
         val centerY = viewHeight.toFloat() / 2
 
+        //画面旋转 TODO 旋转后缩放有问题，需要手动设置
+        if (rotation == Surface.ROTATION_90) {
+            matrix.postRotate(90f, centerX, centerY)
+        } else if (rotation == Surface.ROTATION_180) {
+            matrix.postRotate(180f, centerX, centerY)
+        } else if (rotation == Surface.ROTATION_270) {
+            matrix.postRotate(270f, centerX, centerY)
+        }
 
         //宽高比
         val rotateAspect = rotatedWidth.toFloat() / rotatedHeight
@@ -317,15 +325,8 @@ class Camera2Activity : BaseActivity() {
             matrix.postScale(rotateAspect / viewAspect, 1.0f, centerX, centerY)
             LogUtil.d("画面缩放 ${rotateAspect / viewAspect},1")
         }
+//        matrix.postScale(0.8f, 0.5f, centerX, centerY)
 
-        //画面旋转
-//        if (rotation == Surface.ROTATION_90) {
-//            matrix.postRotate(90f, centerX, centerY)
-//        } else if (rotation == Surface.ROTATION_180) {
-//            matrix.postRotate(180f, centerX, centerY)
-//        } else if (rotation == Surface.ROTATION_270) {
-//            matrix.postRotate(270f, centerX, centerY)
-//        }
 
         //坐标映射 不支持非等比缩放 按比例缩放 + 平移
 //            val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat()) //预览区域 16:9 356x200
