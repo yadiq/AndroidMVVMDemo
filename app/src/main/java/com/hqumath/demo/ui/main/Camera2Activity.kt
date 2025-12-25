@@ -3,9 +3,9 @@ package com.hqumath.demo.ui.main
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.ImageFormat
 import android.graphics.Matrix
-import android.graphics.RectF
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
@@ -27,7 +27,6 @@ import com.hqumath.demo.dialog.BottomSelectDialog
 import com.hqumath.demo.utils.CommonUtil
 import com.hqumath.demo.utils.FileUtil
 import com.hqumath.demo.utils.LogUtil
-import kotlin.math.max
 
 
 class Camera2Activity : BaseActivity() {
@@ -95,7 +94,7 @@ class Camera2Activity : BaseActivity() {
                 width: Int,
                 height: Int,
             ) {
-                configureTransform(width,height)
+                configureTransform(width, height)
                 openCamera()
             }
 
@@ -104,7 +103,7 @@ class Camera2Activity : BaseActivity() {
                 width: Int,
                 height: Int,
             ) {
-                configureTransform(width,height)
+                configureTransform(width, height)
             }
 
             override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean = false
@@ -129,7 +128,8 @@ class Camera2Activity : BaseActivity() {
         //获取摄像头列表和属性
         val manager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
         val cameraId = manager.cameraIdList.first { //返回第一个 条件为 true 的元素
-            manager.getCameraCharacteristics(it).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT //LENS_FACING_BACK
+            manager.getCameraCharacteristics(it)
+                .get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK //LENS_FACING_BACK TODO
         }
         //相机特性
         characteristics = manager.getCameraCharacteristics(cameraId)
@@ -211,7 +211,8 @@ class Camera2Activity : BaseActivity() {
             CameraUtil.KelvinToRggb(3200) // 5000K → RGGB //3200 - 6400 都试一下
         )*/
         ////////////////////////拍照////////////////////////
-        imageReader = ImageReader.newInstance(previewSize.width, previewSize.height, ImageFormat.JPEG, 2) //2最大缓冲区数量（队列大小）
+        imageReader =
+            ImageReader.newInstance(previewSize.width, previewSize.height, ImageFormat.JPEG, 2) //2最大缓冲区数量（队列大小）
         imageReader!!.setOnImageAvailableListener({ reader ->
             val image = reader.acquireLatestImage()
             // 保存图片
@@ -249,10 +250,10 @@ class Camera2Activity : BaseActivity() {
         //创建捕获请求
         captureRequestBuilder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
         captureRequestBuilder?.addTarget(imageReader!!.surface)
-        captureRequestBuilder?.set(
-            CaptureRequest.JPEG_ORIENTATION,
-            90 //拍照旋转
-        )
+//        captureRequestBuilder?.set(
+//            CaptureRequest.JPEG_ORIENTATION,
+//            90 //拍照旋转 TODO
+//        )
         captureRequestBuilder?.set(
             CaptureRequest.CONTROL_MODE, //自动控制模式。自动曝光（AE）、自动白平衡（AWB）、自动对焦（AF）
             //CameraMetadata.CONTROL_MODE_OFF //0关闭自动控制，用户可以手动设置 AE/AWB/AF 等参数
@@ -274,55 +275,85 @@ class Camera2Activity : BaseActivity() {
     //预览旋转
     private fun configureTransform(
         viewWidth: Int,
-        viewHeight: Int
+        viewHeight: Int,
     ) {
-        val rotation = Surface.ROTATION_270
+        val rotation = Surface.ROTATION_0 //画面旋转
         val matrix = Matrix()
 
-        if (rotation == Surface.ROTATION_270) {
-            //画面的尺寸
-            val previewWidth = previewSize.width
-            val previewHeight = previewSize.height
-            //旋转后的尺寸
-            val rotatedWidth = if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) {
-                previewHeight
-            } else {
-                previewWidth
-            }
-            val rotatedHeight = if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) {
-                previewWidth
-            } else {
-                previewHeight
-            }
-            LogUtil.d("预览区域 width=${viewWidth} height=${viewHeight}")
-            LogUtil.d("画面尺寸 width=${previewWidth} height=${previewHeight}")
-            LogUtil.d("旋转后尺寸 width=${rotatedWidth} height=${rotatedHeight}")
+        val displayOrientation = resources.configuration.orientation //屏幕方向 Configuration.ORIENTATION_PORTRAIT
+        val cameraOrientation = Configuration.ORIENTATION_LANDSCAPE //相机方向 TODO
+        LogUtil.d("屏幕方向=$displayOrientation 相机方向=$cameraOrientation")
+        //画面的尺寸
+        val previewWidth =
+            if (cameraOrientation == Configuration.ORIENTATION_PORTRAIT)
+                previewSize.height
+            else
+                previewSize.width
+        val previewHeight =
+            if (cameraOrientation == Configuration.ORIENTATION_PORTRAIT)
+                previewSize.width
+            else
+                previewSize.height
 
-            //坐标映射 当比例不一致时，告诉系统你要怎么缩放、怎么对齐
+        //旋转后的尺寸
+        val rotatedWidth =
+            if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270)
+                previewHeight
+            else
+                previewWidth
+        val rotatedHeight =
+            if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270)
+                previewWidth
+            else
+                previewHeight
+
+        LogUtil.d("View尺寸 width=${viewWidth} height=${viewHeight}")
+        LogUtil.d("画面尺寸 width=${previewWidth} height=${previewHeight}")
+        LogUtil.d("旋转后尺寸 width=${rotatedWidth} height=${rotatedHeight}")
+        val centerX = viewWidth.toFloat() / 2
+        val centerY = viewHeight.toFloat() / 2
+
+        //宽高比
+        val rotateAspect = rotatedWidth.toFloat() / rotatedHeight
+        val viewAspect = viewWidth.toFloat() / viewHeight
+        LogUtil.d("画面宽高比=$rotateAspect View宽高比=$viewAspect")
+        //画面缩放
+        if (rotateAspect > viewAspect) { //画面宽高比>View宽高比。画面宽度较宽，垂直方向有黑边
+            matrix.postScale(1.0f, 1 / rotateAspect, centerX, centerY)
+        } else { //画面高度较高，水平方向有黑边
+            matrix.postScale(rotateAspect, 1.0f, centerX, centerY)
+        }
+
+
+        //坐标映射 不支持非等比缩放 按比例缩放 + 平移
 //            val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat()) //预览区域 16:9 356x200
 //            val bufferRect = RectF(0f, 0f, previewSize.width.toFloat(), previewSize.height.toFloat()) //画面的尺寸 1280x720
 //            bufferRect.offset(viewRect.centerX() - bufferRect.centerX(), viewRect.centerY() - bufferRect.centerY())
 //            matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL) //坐标映射。FILL 填满,允许裁剪,不留黑边; CENTER 完整画面,不裁剪,有黑边
 
+//        val videoRect = RectF(0f, 0f, previewWidth.toFloat(), previewHeight.toFloat()) //画面的尺寸 1280x720
+//        val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat()) //预览区域
+////        videoRect.offset(viewRect.centerX() - videoRect.centerX(), viewRect.centerY() - videoRect.centerY())
+//        matrix.setRectToRect(videoRect, viewRect, Matrix.ScaleToFit.CENTER) //坐标映射。FILL 填满,允许裁剪,不留黑边; CENTER 完整画面,不裁剪,有黑边
 
-            val centerX = viewWidth.toFloat() / 2
-            val centerY = viewHeight.toFloat() / 2
-            //画面缩放
-            val scale = max(viewHeight.toFloat() / rotatedHeight, viewWidth.toFloat() / rotatedWidth)
-            matrix.postScale(scale, scale, centerX, centerY)
-            LogUtil.d("缩放比例 $scale")
-            //画面旋转
-            matrix.postRotate(270f, centerX, centerY)
-        } else if (rotation == Surface.ROTATION_0) {
 
-        }
+        //画面旋转
+//        if (rotation == Surface.ROTATION_90) {
+//            matrix.postRotate(90f, centerX, centerY)
+//        } else if (rotation == Surface.ROTATION_180) {
+//            matrix.postRotate(180f, centerX, centerY)
+//        } else if (rotation == Surface.ROTATION_270) {
+//            matrix.postRotate(270f, centerX, centerY)
+//        }
         binding.textureView.setTransform(matrix)
     }
 
-
-
     //////////////相机特性
     private fun getCharacteristics() {
+        val sensorOrientation =
+            characteristics?.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 0 //摄像头传感器方向 0 / 90 / 180 / 270
+        LogUtil.d("相机方向: $sensorOrientation")
+
         //获取支持的白平衡模式数组
         val awbModes: IntArray = characteristics?.get(CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES) ?: IntArray(0)
         for (mode in awbModes) {
@@ -331,7 +362,8 @@ class Camera2Activity : BaseActivity() {
 
         //获取支持的所有分辨率
         // 预览SurfaceTexture.class 拍照ImageFormat.JPEG 录像MediaRecorder.class
-        val streamMap: StreamConfigurationMap? = characteristics?.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+        val streamMap: StreamConfigurationMap? =
+            characteristics?.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
         val sizes: Array<Size> = streamMap?.getOutputSizes(SurfaceTexture::class.java) ?: emptyArray()
         sizes.forEach {
             LogUtil.d("预览分辨率: ${it.width}x${it.height}")

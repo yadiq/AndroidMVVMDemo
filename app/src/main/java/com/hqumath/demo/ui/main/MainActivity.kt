@@ -50,6 +50,7 @@ class MainActivity : BaseActivity() {
         binding.btnMyRepos.setOnClickListener {
             startActivity(Intent(mContext, Camera2Activity::class.java))
         }
+        binding.btnMyRepos.performClick()
     }
 
     override fun initData() {
