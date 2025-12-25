@@ -277,32 +277,23 @@ class Camera2Activity : BaseActivity() {
         viewWidth: Int,
         viewHeight: Int,
     ) {
-        val rotation = Surface.ROTATION_0 //画面旋转
+        val rotation = Surface.ROTATION_270 //画面旋转
         val matrix = Matrix()
 
-        val displayOrientation = resources.configuration.orientation //屏幕方向 Configuration.ORIENTATION_PORTRAIT
         val cameraOrientation = Configuration.ORIENTATION_LANDSCAPE //相机方向 TODO
-        LogUtil.d("屏幕方向=$displayOrientation 相机方向=$cameraOrientation")
+        LogUtil.d("相机方向=$cameraOrientation")
         //画面的尺寸
-        val previewWidth =
-            if (cameraOrientation == Configuration.ORIENTATION_PORTRAIT)
-                previewSize.height
-            else
-                previewSize.width
-        val previewHeight =
-            if (cameraOrientation == Configuration.ORIENTATION_PORTRAIT)
-                previewSize.width
-            else
-                previewSize.height
+        val previewWidth = previewSize.width
+        val previewHeight = previewSize.height
 
         //旋转后的尺寸
         val rotatedWidth =
-            if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270)
+            if (cameraOrientation == Configuration.ORIENTATION_PORTRAIT)
                 previewHeight
             else
                 previewWidth
         val rotatedHeight =
-            if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270)
+            if (cameraOrientation == Configuration.ORIENTATION_PORTRAIT)
                 previewWidth
             else
                 previewHeight
@@ -313,29 +304,19 @@ class Camera2Activity : BaseActivity() {
         val centerX = viewWidth.toFloat() / 2
         val centerY = viewHeight.toFloat() / 2
 
+
         //宽高比
         val rotateAspect = rotatedWidth.toFloat() / rotatedHeight
         val viewAspect = viewWidth.toFloat() / viewHeight
         LogUtil.d("画面宽高比=$rotateAspect View宽高比=$viewAspect")
         //画面缩放
         if (rotateAspect > viewAspect) { //画面宽高比>View宽高比。画面宽度较宽，垂直方向有黑边
-            matrix.postScale(1.0f, 1 / rotateAspect, centerX, centerY)
+            matrix.postScale(1.0f, viewAspect / rotateAspect, centerX, centerY)
+            LogUtil.d("画面缩放 1,${viewAspect / rotateAspect}")
         } else { //画面高度较高，水平方向有黑边
-            matrix.postScale(rotateAspect, 1.0f, centerX, centerY)
+            matrix.postScale(rotateAspect / viewAspect, 1.0f, centerX, centerY)
+            LogUtil.d("画面缩放 ${rotateAspect / viewAspect},1")
         }
-
-
-        //坐标映射 不支持非等比缩放 按比例缩放 + 平移
-//            val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat()) //预览区域 16:9 356x200
-//            val bufferRect = RectF(0f, 0f, previewSize.width.toFloat(), previewSize.height.toFloat()) //画面的尺寸 1280x720
-//            bufferRect.offset(viewRect.centerX() - bufferRect.centerX(), viewRect.centerY() - bufferRect.centerY())
-//            matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL) //坐标映射。FILL 填满,允许裁剪,不留黑边; CENTER 完整画面,不裁剪,有黑边
-
-//        val videoRect = RectF(0f, 0f, previewWidth.toFloat(), previewHeight.toFloat()) //画面的尺寸 1280x720
-//        val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat()) //预览区域
-////        videoRect.offset(viewRect.centerX() - videoRect.centerX(), viewRect.centerY() - videoRect.centerY())
-//        matrix.setRectToRect(videoRect, viewRect, Matrix.ScaleToFit.CENTER) //坐标映射。FILL 填满,允许裁剪,不留黑边; CENTER 完整画面,不裁剪,有黑边
-
 
         //画面旋转
 //        if (rotation == Surface.ROTATION_90) {
@@ -345,6 +326,18 @@ class Camera2Activity : BaseActivity() {
 //        } else if (rotation == Surface.ROTATION_270) {
 //            matrix.postRotate(270f, centerX, centerY)
 //        }
+
+        //坐标映射 不支持非等比缩放 按比例缩放 + 平移
+//            val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat()) //预览区域 16:9 356x200
+//            val bufferRect = RectF(0f, 0f, previewSize.width.toFloat(), previewSize.height.toFloat()) //画面的尺寸 1280x720
+//            bufferRect.offset(viewRect.centerX() - bufferRect.centerX(), viewRect.centerY() - bufferRect.centerY())
+//            matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL) //坐标映射。FILL 填满,允许裁剪,不留黑边; CENTER 完整画面,不裁剪,有黑边
+//        val videoRect = RectF(0f, 0f, previewWidth.toFloat(), previewHeight.toFloat()) //画面的尺寸 1280x720
+//        val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat()) //预览区域
+////        videoRect.offset(viewRect.centerX() - videoRect.centerX(), viewRect.centerY() - videoRect.centerY())
+//        matrix.setRectToRect(videoRect, viewRect, Matrix.ScaleToFit.CENTER) //坐标映射。FILL 填满,允许裁剪,不留黑边; CENTER 完整画面,不裁剪,有黑边
+
+
         binding.textureView.setTransform(matrix)
     }
 
