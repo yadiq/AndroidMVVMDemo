@@ -2,8 +2,8 @@ package com.hqumath.demo.ui.main
 
 import android.Manifest
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.graphics.ImageFormat
 import android.graphics.Matrix
 import android.graphics.SurfaceTexture
@@ -25,6 +25,7 @@ import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityCamera2Binding
 import com.hqumath.demo.dialog.BottomSelectDialog
 import com.hqumath.demo.utils.CommonUtil
+import com.hqumath.demo.utils.DeviceUtil
 import com.hqumath.demo.utils.FileUtil
 import com.hqumath.demo.utils.LogUtil
 
@@ -38,11 +39,56 @@ class Camera2Activity : BaseActivity() {
     private var captureRequestBuilder: CaptureRequest.Builder? = null
 
     private var imageReader: ImageReader? = null
-
     private var selectAreaDialog: BottomSelectDialog? = null
+
     private val previewSize = Size(1280, 720) //预览分辨率 1920x1080 1280x720 640x480
 
+    //小米10s 前后摄配置相同
+    private val cameraType = CameraCharacteristics.LENS_FACING_FRONT //摄像头类型 LENS_FACING_FRONT LENS_FACING_BACK
+    private val screenOrientation =
+        ActivityInfo.SCREEN_ORIENTATION_PORTRAIT //屏幕方向。要求旋转设备，使摄像头的画面水平 SCREEN_ORIENTATION_PORTRAIT SCREEN_ORIENTATION_LANDSCAPE
+    private val previewRotation = 0 //预览旋转 0 90 180 270
+    private val previewMirror = 0 //0不镜像 1水平镜像 2垂直镜像
+    private val photoRotation = 0 //拍照旋转 前后摄都修改无效
+    //zjx胸牌
+//    private val cameraType = CameraCharacteristics.LENS_FACING_BACK //摄像头类型
+//    private val screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE //屏幕方向。要求旋转设备，使摄像头的画面水平
+//    private val previewRotation = 0 //预览旋转 0 90 180 270
+//    private val previewMirror = 1 //0不镜像 1水平镜像 2垂直镜像
+//    private val photoRotation = 180 //拍照旋转
+    //zfzj胸牌
+//    private val cameraType = CameraCharacteristics.LENS_FACING_FRONT //摄像头类型
+//    private val screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE //屏幕方向。要求旋转设备，使摄像头的画面水平
+//    private val previewRotation = 270 //预览旋转 0 90 180 270
+//    private val previewMirror = 0 //0不镜像 1水平镜像 2垂直镜像
+//    private val photoRotation = 90 //拍照旋转
+    //zfzj手持 后摄
+//    private val cameraType = CameraCharacteristics.LENS_FACING_BACK //摄像头类型
+//    private val screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT //屏幕方向。要求旋转设备，使摄像头的画面水平
+//    private val previewRotation = 0 //预览旋转 0 90 180 270
+//    private val previewMirror = 0 //0不镜像 1水平镜像 2垂直镜像
+//    private val photoRotation = 0 //拍照旋转
+    //zfzj手持 前摄
+//    private val cameraType = CameraCharacteristics.LENS_FACING_FRONT //摄像头类型
+//    private val screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT //屏幕方向。要求旋转设备，使摄像头的画面水平
+//    private val previewRotation = 0 //预览旋转 0 90 180 270
+//    private val previewMirror = 0 //0不镜像 1水平镜像 2垂直镜像
+//    private val photoRotation = 270 //拍照旋转
+    //自研手持 后摄
+//    private val cameraType = CameraCharacteristics.LENS_FACING_BACK //摄像头类型
+//    private val screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT //屏幕方向。要求旋转设备，使摄像头的画面水平
+//    private val previewRotation = 0 //预览旋转 0 90 180 270
+//    private val previewMirror = 0 //0不镜像 1水平镜像 2垂直镜像
+//    private val photoRotation = 0 //拍照旋转
+    //自研手持 前摄
+//    private val cameraType = CameraCharacteristics.LENS_FACING_FRONT //摄像头类型
+//    private val screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT //屏幕方向。要求旋转设备，使摄像头的画面水平
+//    private val previewRotation = 0 //预览旋转 0 90 180 270
+//    private val previewMirror = 0 //0不镜像 1水平镜像 2垂直镜像
+//    private val photoRotation = 270 //拍照旋转
+
     override fun initContentView(savedInstanceState: Bundle?): View {
+        requestedOrientation = screenOrientation //修改屏幕方向
         binding = ActivityCamera2Binding.inflate(layoutInflater)
         return binding.root
     }
@@ -128,8 +174,7 @@ class Camera2Activity : BaseActivity() {
         //获取摄像头列表和属性
         val manager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
         val cameraId = manager.cameraIdList.first { //返回第一个 条件为 true 的元素
-            manager.getCameraCharacteristics(it)
-                .get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT //LENS_FACING_BACK TODO
+            manager.getCameraCharacteristics(it).get(CameraCharacteristics.LENS_FACING) == cameraType
         }
         //相机特性
         characteristics = manager.getCameraCharacteristics(cameraId)
@@ -250,10 +295,7 @@ class Camera2Activity : BaseActivity() {
         //创建捕获请求
         captureRequestBuilder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
         captureRequestBuilder?.addTarget(imageReader!!.surface)
-//        captureRequestBuilder?.set(
-//            CaptureRequest.JPEG_ORIENTATION,
-//            90 //拍照旋转 TODO
-//        )
+        captureRequestBuilder?.set(CaptureRequest.JPEG_ORIENTATION, photoRotation) //拍照旋转
         captureRequestBuilder?.set(
             CaptureRequest.CONTROL_MODE, //自动控制模式。自动曝光（AE）、自动白平衡（AWB）、自动对焦（AF）
             //CameraMetadata.CONTROL_MODE_OFF //0关闭自动控制，用户可以手动设置 AE/AWB/AF 等参数
@@ -277,67 +319,76 @@ class Camera2Activity : BaseActivity() {
         viewWidth: Int,
         viewHeight: Int,
     ) {
-        val rotation = Surface.ROTATION_270 //画面旋转
-        val matrix = Matrix()
 
-        val cameraOrientation = Configuration.ORIENTATION_LANDSCAPE //相机方向 TODO
-        LogUtil.d("相机方向=$cameraOrientation")
+        ///////////////////////画面尺寸///////////////////////
+        val deviceModel = DeviceUtil.getDeviceModel()
+        LogUtil.d("设备型号 $deviceModel")
         //画面的尺寸
-        val previewWidth = previewSize.width
-        val previewHeight = previewSize.height
-
+        var previewWidth = previewSize.width
+        var previewHeight = previewSize.height
+        if ((deviceModel.equals("M2102J2SC")) || //小米10s前后摄方向都垂直
+            (deviceModel.equals("DSJ-X3") && cameraType == CameraCharacteristics.LENS_FACING_FRONT) || //zfzj手持前摄方向垂直
+            (deviceModel.equals("TGZ01") && cameraType == CameraCharacteristics.LENS_FACING_FRONT) //自研手持前摄方向垂直
+        ) {
+            previewWidth = previewSize.height
+            previewHeight = previewSize.width
+        }
         //旋转后的尺寸
         val rotatedWidth =
-            if (cameraOrientation == Configuration.ORIENTATION_PORTRAIT)
+            if (previewRotation == 90 || previewRotation == 270)
                 previewHeight
             else
                 previewWidth
         val rotatedHeight =
-            if (cameraOrientation == Configuration.ORIENTATION_PORTRAIT)
+            if (previewRotation == 90 || previewRotation == 270)
                 previewWidth
             else
                 previewHeight
-
         LogUtil.d("View尺寸 width=${viewWidth} height=${viewHeight}")
         LogUtil.d("画面尺寸 width=${previewWidth} height=${previewHeight}")
         LogUtil.d("旋转后尺寸 width=${rotatedWidth} height=${rotatedHeight}")
+
+        ////////////////////处理画面///////////////////////
         val centerX = viewWidth.toFloat() / 2
         val centerY = viewHeight.toFloat() / 2
+        val matrix = Matrix()
 
-        //画面旋转 TODO 旋转后缩放有问题，需要手动设置
-        if (rotation == Surface.ROTATION_90) {
-            matrix.postRotate(90f, centerX, centerY)
-        } else if (rotation == Surface.ROTATION_180) {
-            matrix.postRotate(180f, centerX, centerY)
-        } else if (rotation == Surface.ROTATION_270) {
-            matrix.postRotate(270f, centerX, centerY)
+        //旋转
+        matrix.postRotate(previewRotation.toFloat(), centerX, centerY)
+
+        //缩放
+        var scaleX = 1f
+        var scaleY = 1f
+
+        if (deviceModel.equals("DSJ-Z3")) { //zfzj胸牌 前摄预览是方形的
+            scaleX = 0.8f
+            scaleY = 0.4f
+        } else { //默认预览画面可铺满屏幕
+            val rotateAspect = rotatedWidth.toFloat() / rotatedHeight //画面宽高比
+            val viewAspect = viewWidth.toFloat() / viewHeight //View宽高比
+            LogUtil.d("画面宽高比=$rotateAspect View宽高比=$viewAspect")
+            if (rotateAspect > viewAspect) { //画面宽高比>View宽高比。画面宽度较宽，垂直方向有黑边
+                scaleX = 1f
+                scaleY = viewAspect / rotateAspect
+            } else { //画面高度较高，水平方向有黑边
+                scaleX = rotateAspect / viewAspect
+                scaleY = 1f
+            }
         }
+        LogUtil.d("缩放 scaleX=$scaleX scaleY=$scaleY")
+        matrix.postScale(scaleX, scaleY, centerX, centerY)
 
-        //宽高比
-        val rotateAspect = rotatedWidth.toFloat() / rotatedHeight
-        val viewAspect = viewWidth.toFloat() / viewHeight
-        LogUtil.d("画面宽高比=$rotateAspect View宽高比=$viewAspect")
-        //画面缩放
-        if (rotateAspect > viewAspect) { //画面宽高比>View宽高比。画面宽度较宽，垂直方向有黑边
-            matrix.postScale(1.0f, viewAspect / rotateAspect, centerX, centerY)
-            LogUtil.d("画面缩放 1,${viewAspect / rotateAspect}")
-        } else { //画面高度较高，水平方向有黑边
-            matrix.postScale(rotateAspect / viewAspect, 1.0f, centerX, centerY)
-            LogUtil.d("画面缩放 ${rotateAspect / viewAspect},1")
-        }
-//        matrix.postScale(0.8f, 0.5f, centerX, centerY)
+        //镜像
+        if (previewMirror == 1)
+            matrix.postScale(-1f, 1f, centerX, centerY) //水平
+        else if (previewMirror == 2)
+            matrix.postScale(1f, -1f, centerX, centerY) //垂直
 
-
-        //坐标映射 不支持非等比缩放 按比例缩放 + 平移
+        //坐标映射 按比例缩放+平移 弃用
 //            val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat()) //预览区域 16:9 356x200
 //            val bufferRect = RectF(0f, 0f, previewSize.width.toFloat(), previewSize.height.toFloat()) //画面的尺寸 1280x720
 //            bufferRect.offset(viewRect.centerX() - bufferRect.centerX(), viewRect.centerY() - bufferRect.centerY())
 //            matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL) //坐标映射。FILL 填满,允许裁剪,不留黑边; CENTER 完整画面,不裁剪,有黑边
-//        val videoRect = RectF(0f, 0f, previewWidth.toFloat(), previewHeight.toFloat()) //画面的尺寸 1280x720
-//        val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat()) //预览区域
-////        videoRect.offset(viewRect.centerX() - videoRect.centerX(), viewRect.centerY() - videoRect.centerY())
-//        matrix.setRectToRect(videoRect, viewRect, Matrix.ScaleToFit.CENTER) //坐标映射。FILL 填满,允许裁剪,不留黑边; CENTER 完整画面,不裁剪,有黑边
-
 
         binding.textureView.setTransform(matrix)
     }
@@ -351,7 +402,7 @@ class Camera2Activity : BaseActivity() {
         //获取支持的白平衡模式数组
         val awbModes: IntArray = characteristics?.get(CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES) ?: IntArray(0)
         for (mode in awbModes) {
-            LogUtil.d("白平衡模式: ${getModeDescription(mode)}")
+            //LogUtil.d("白平衡模式: ${getModeDescription(mode)}")
         }
 
         //获取支持的所有分辨率
@@ -360,7 +411,7 @@ class Camera2Activity : BaseActivity() {
             characteristics?.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
         val sizes: Array<Size> = streamMap?.getOutputSizes(SurfaceTexture::class.java) ?: emptyArray()
         sizes.forEach {
-            LogUtil.d("预览分辨率: ${it.width}x${it.height}")
+            //LogUtil.d("预览分辨率: ${it.width}x${it.height}") TODO
         }
     }
 

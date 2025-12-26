@@ -19,11 +19,14 @@ import java.util.Enumeration;
 
 import static android.content.Context.TELEPHONY_SERVICE;
 
+import androidx.annotation.RequiresPermission;
+
 public class DeviceUtil {
 
     /**
      * 获取imei SIM卡槽
      */
+    @RequiresPermission("android.permission.READ_PRIVILEGED_PHONE_STATE")
     public static String getIMEI() {
         Context context = CommonUtil.getContext();
         String imei = "";
@@ -34,6 +37,24 @@ public class DeviceUtil {
             e.printStackTrace();
         }
         return imei;
+    }
+
+    /**
+     * 获取设备型号
+     */
+    public static String getDeviceModel() {
+        String model = Build.MODEL;
+        if (model == null) model = "";
+        return model;
+    }
+
+    /**
+     * 获取设备版本号
+     */
+    public static String getDeviceVersion() {
+        String version = Build.DISPLAY;
+        if (version == null) version = "";
+        return version;
     }
 
     /**
