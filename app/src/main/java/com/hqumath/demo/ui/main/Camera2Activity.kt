@@ -61,7 +61,7 @@ class Camera2Activity : BaseActivity() {
 //    private val screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE //屏幕方向。要求旋转设备，使摄像头的画面水平
 //    private val previewRotation = 270 //预览旋转 0 90 180 270
 //    private val previewMirror = 0 //0不镜像 1水平镜像 2垂直镜像
-//    private val photoRotation = 90 //拍照旋转
+//    private val photoRotation = 0 //拍照旋转
     //zfzj手持 后摄
 //    private val cameraType = CameraCharacteristics.LENS_FACING_BACK //摄像头类型
 //    private val screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT //屏幕方向。要求旋转设备，使摄像头的画面水平
@@ -361,8 +361,10 @@ class Camera2Activity : BaseActivity() {
         var scaleY = 1f
 
         if (deviceModel.equals("DSJ-Z3")) { //zfzj胸牌 前摄预览是方形的
-            scaleX = 0.8f
-            scaleY = 0.4f
+            /*scaleX = 0.8f //旧设备，前摄方向垂直
+            scaleY = 0.4f*/
+            scaleX = 2.0f //新设备，前摄方向水平
+            scaleY = 0.43f
         } else { //默认预览画面可铺满屏幕
             val rotateAspect = rotatedWidth.toFloat() / rotatedHeight //画面宽高比
             val viewAspect = viewWidth.toFloat() / viewHeight //View宽高比
