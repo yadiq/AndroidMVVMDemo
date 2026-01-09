@@ -18,6 +18,7 @@ import com.hqumath.demo.dialog.CommonDialog
 import com.hqumath.demo.service.MonitorService
 import com.hqumath.demo.ui.repos.MyReposActivity
 import com.hqumath.demo.utils.CommonUtil
+import com.hqumath.demo.utils.DeviceUtil
 import com.hqumath.demo.utils.LogUtil
 import com.yanzhenjie.permission.AndPermission
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +51,7 @@ class MainActivity : BaseActivity() {
         binding.btnMyRepos.setOnClickListener {
             startActivity(Intent(mContext, Camera2Activity::class.java))
         }
-        binding.btnMyRepos.performClick()
+        //binding.btnMyRepos.performClick()
     }
 
     override fun initData() {
@@ -113,6 +114,11 @@ class MainActivity : BaseActivity() {
 //                }
             }
         }
+
+        //打印设备信息
+        val model = DeviceUtil.getDeviceModel()
+        val version = DeviceUtil.getDeviceVersion()
+        LogUtil.d("设备型号=$model 设备版本号=$version")
     }
 
     private val connection: ServiceConnection = object : ServiceConnection {
