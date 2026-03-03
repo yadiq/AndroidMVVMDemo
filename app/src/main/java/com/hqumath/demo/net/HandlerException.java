@@ -34,7 +34,7 @@ public class HandlerException {
         if (e instanceof HttpException) {
             HttpException httpException = (HttpException) e;
             ex = new ResponseThrowable(e, ERROR.HTTP_ERROR + "");
-            LogUtil.e("OkHttp", "错误号：" + httpException.code(), false);
+            LogUtil.INSTANCE.e("OkHttp", "错误号：" + httpException.code());
             switch (httpException.code()) {
                 case UNAUTHORIZED:
                 case FORBIDDEN:

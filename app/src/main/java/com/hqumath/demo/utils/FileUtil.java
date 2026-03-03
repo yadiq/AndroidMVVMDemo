@@ -169,11 +169,11 @@ public class FileUtil {
             fis.close();
 
             int type = (buffer[4] & 0x7e) >> 1;
-            LogUtil.d("type = " + type);
+            LogUtil.INSTANCE.d("type = " + type);
 
             String msg = ByteUtil.bytesToHexWithSpace(buffer);
             msg = msg.replace("00 00 00 01 ", "\n");
-            LogUtil.d(msg);
+            LogUtil.INSTANCE.d(msg);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -245,7 +245,7 @@ public class FileUtil {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.d("CopyAssets error path=" + assetsDirName);
+            LogUtil.INSTANCE.d("CopyAssets error path=" + assetsDirName);
         }
         return result;
     }

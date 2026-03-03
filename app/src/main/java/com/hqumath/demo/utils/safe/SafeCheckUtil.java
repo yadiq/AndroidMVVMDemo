@@ -24,7 +24,7 @@ public class SafeCheckUtil {
             boolean isEmulator = EmulatorCheckUtil.readSysProperty(context);
             boolean isRoot = RootUtil.root();
             if (isEmulator || isRoot) {
-                LogUtil.d("反模拟器、反root");
+                LogUtil.INSTANCE.d("反模拟器、反root");
                 System.exit(0);
                 return;
             }

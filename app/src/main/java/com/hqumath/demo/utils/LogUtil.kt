@@ -1,9 +1,15 @@
 package com.hqumath.demo.utils
 
+import android.content.ContentValues
 import android.content.Context
+import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.hqumath.demo.BuildConfig
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileInputStream
@@ -15,16 +21,20 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 
-object LogUtils {
+object LogUtil {
 
     private val isDebug: Boolean = BuildConfig.DEBUG //是否需要打印bug，buildTypes.debug中配置
     private const val TAG: String = "DEBUG"
+
     // 日志文件最大大小：5MB
     //private const val MAX_FILE_SIZE = 5 * 1024 * 1024L
     // 最大保留日志文件数量 14天
     private const val MAX_FILE_COUNT = 14
+
     // 日志文件命名格式
     private val DATE_FORMAT_FILE = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.CHINA)
     private val DATE_FORMAT_LOG = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.CHINA)
@@ -150,12 +160,12 @@ object LogUtils {
         writeExecutor.execute {
             try {
                 val currentFile = getCurrentLogFile()
-                //rotateIfNeeded()
+                //rotateIfNeeded() //日志文件超过大小需要分片
                 deleteOldFiles()
 
                 // 写入日志内容
                 val logContent = "${DATE_FORMAT_LOG.format(Date())} [$level] $tag: $msg\n"
-                //writer.write(time + " " + level + "/" + tag + ": " + msg + "\n"); TODO 日志格式
+                //writer.write(time + " " + level + "/" + tag + ": " + msg + "\n"); 日志格式
                 BufferedWriter(FileWriter(currentFile, true)).use { writer ->
                     writer.appendLine(logContent)
                 }
@@ -174,25 +184,6 @@ object LogUtils {
     }
 
     /**
-     * 日志文件轮转，文件大小超过阈值则新建文件 TODO
-     */
-//    private fun rotateIfNeeded() {
-//        // 检查文件大小，超过阈值则新建文件
-//        if (currentFile.length() >= MAX_FILE_SIZE) {
-//            rotateIfNeeded()
-//        }
-//
-//        val files = logDir.listFiles { file -> file.name.endsWith(".txt") } ?: return
-//        if (files.size >= MAX_FILE_COUNT) {
-//            // 按修改时间排序，删除最旧的文件
-//            Arrays.sort(files) { f1, f2 -> f1.lastModified().compareTo(f2.lastModified()) }
-//            for (i in 0 until files.size - MAX_FILE_COUNT + 1) {
-//                files[i].delete()
-//            }
-//        }
-//    }
-
-    /**
      * 删除旧文件，保留指定数量
      */
     private fun deleteOldFiles() {
@@ -206,48 +197,97 @@ object LogUtils {
         }
     }
 
-
-
-
+    //////////////////////////////导出日志文件
+    //使用方法 (需要切换到IO线程, Android6.0-9.0需要申请写入权限)
+    /*lifecycleScope.launch { //默认Main线程
+        val result = withContext(Dispatchers.IO) {
+            LogUtil.exportLogsToDownload(mContext)
+        }
+        CommonUtil.toast(if (result) "日志已导出到下载目录" else "日志导出失败")
+    }*/
 
     /**
-     * 导出日志文件到下载目录（供用户访问） TODO
-     * @return 导出后的文件路径，失败返回null
+     * 导出整个日志目录到Download目录
+     * 需要切换到IO线程, Android6.0-9.0需要申请写入权限
      */
-    fun exportLogFile(): String? {
-        return try {
-            val currentFile = getCurrentLogFile()
-            if (!currentFile.exists()) return null
-
-            // 下载目录（Android 10+需适配Scoped Storage，这里简化处理）
-            val downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-            val exportFileName = "app_log_${DATE_FORMAT_FILE.format(Date())}.txt"
-            val exportFile = File(downloadDir, exportFileName)
-
-            // 复制文件
-            FileInputStream(currentFile).use { input ->
-                FileOutputStream(exportFile).use { output ->
-                    input.copyTo(output)
-                }
+    fun exportLogsToDownload(context: Context): Boolean {
+        try {
+            val zipFile = zipLogDirectory(context)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { // Android 10 及以上
+                exportWithMediaStore(context, zipFile)
+            } else { // Android 9 及以下
+                exportLegacy(context, zipFile)
             }
-            exportFile.absolutePath
+            return true
         } catch (e: Exception) {
-            Log.e(TAG, "导出日志失败", e)
-            null
+            e.printStackTrace()
+            Log.e(TAG, "日志导出失败", e)
+            return false
         }
     }
 
     /**
-     * 获取所有日志文件列表
+     * 压缩整个日志目录
      */
-    fun getLogFiles(): Array<File>? {
-        return logDir.listFiles { file -> file.name.endsWith(".txt") }
+    private fun zipLogDirectory(context: Context): File {
+        val device = Build.MODEL.replace(" ", "_")
+        val version = BuildConfig.VERSION_CODE
+        val zipFile = File(context.externalCacheDir, "log_${device}_${version}_${DATE_FORMAT_FILE.format(Date())}.zip")
+        ZipOutputStream(FileOutputStream(zipFile)).use { zos ->
+            logDir.listFiles()?.forEach { file ->
+                FileInputStream(file).use { fis ->
+                    zos.putNextEntry(ZipEntry(file.name))
+                    fis.copyTo(zos)
+                    zos.closeEntry()
+                }
+            }
+        }
+        return zipFile
     }
 
     /**
-     * 清空所有日志文件
+     * 导出文件到Download目录，Android 10 及以上
      */
-    fun clearLogs() {
-        getLogFiles()?.forEach { it.delete() }
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun exportWithMediaStore(context: Context, zipFile: File) {
+        val resolver = context.contentResolver
+        val collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Downloads.DISPLAY_NAME, zipFile.name)
+            put(MediaStore.Downloads.MIME_TYPE, "application/zip")
+            put(MediaStore.Downloads.IS_PENDING, 1)
+        }
+        val itemUri = resolver.insert(collection, contentValues) ?: throw Exception("MediaStore insert failed")
+        resolver.openOutputStream(itemUri)?.use { outputStream ->
+            FileInputStream(zipFile).use { inputStream ->
+                inputStream.copyTo(outputStream)
+            }
+        }
+        contentValues.clear()
+        contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
+        resolver.update(itemUri, contentValues, null, null)
+    }
+
+    /**
+     * 导出文件到Download目录，Android 9 及以下
+     * Android6.0-9.0需要申请写入权限
+     */
+    private fun exportLegacy(context: Context, zipFile: File) {
+        val downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        if (!downloadDir.exists()) downloadDir.mkdirs()
+        val targetFile = File(downloadDir, zipFile.name)
+        zipFile.copyTo(targetFile, overwrite = true)
+        /*AndPermission.with(context)
+            .runtime()
+            .permission(Permission.WRITE_EXTERNAL_STORAGE)
+            .onGranted { permissions ->
+                //...
+            }
+            .onDenied { permissions ->
+                if (AndPermission.hasAlwaysDeniedPermission(context, permissions)) {
+                    PermissionUtil.showSettingDialog(context, permissions)//自定义弹窗 去设置界面
+                }
+            }
+            .start()*/
     }
 }

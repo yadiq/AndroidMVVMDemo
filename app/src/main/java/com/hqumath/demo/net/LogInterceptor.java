@@ -28,7 +28,7 @@ public class LogInterceptor implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         //请求
         Request request = chain.request();
-        LogUtil.d(TAG, "--> " + request.method() + ' ' + request.url(), false);
+        LogUtil.INSTANCE.d(TAG, "--> " + request.method() + ' ' + request.url());
 
         //body入参
         RequestBody requestBody = request.body();
@@ -43,7 +43,7 @@ public class LogInterceptor implements Interceptor {
             String bodyStr = buffer.readString(charset);
             if (bodyStr.length() > 1500)
                 bodyStr = bodyStr.substring(0, 1500);
-            LogUtil.d(TAG, bodyStr, false);
+            LogUtil.INSTANCE.d(TAG, bodyStr);
         }
 
         //响应
@@ -52,14 +52,14 @@ public class LogInterceptor implements Interceptor {
         try {
             response = chain.proceed(request);
         } catch (Exception e) {
-            LogUtil.d(TAG, "<-- HTTP FAILED: " + e, false);
+            LogUtil.INSTANCE.d(TAG, "<-- HTTP FAILED: " + e);
             throw e;
         }
         long tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs);
-        LogUtil.d(TAG, "<-- " + response.code()
+        LogUtil.INSTANCE.d(TAG, "<-- " + response.code()
                 + (response.message().isEmpty() ? "" : ' ' + response.message())
                 + ' ' + response.request().url()
-                + " (" + tookMs + "ms)", false);
+                + " (" + tookMs + "ms)");
 
         //出参
         ResponseBody responseBody = response.body();
@@ -76,7 +76,7 @@ public class LogInterceptor implements Interceptor {
             charset = contentType.charset(UTF8);
         }
         String content = buffer.clone().readString(charset);
-        LogUtil.d(TAG, content, false);
+        LogUtil.INSTANCE.d(TAG, content);
         return response;
     }
 }

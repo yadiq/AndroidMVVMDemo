@@ -8,21 +8,15 @@ package com.hqumath.demo.utils;
 import android.util.Log;
 
 import com.hqumath.demo.BuildConfig;
+import com.yanzhenjie.permission.AndPermission;
+import com.yanzhenjie.permission.runtime.Permission;
 
 /**
  * Log统一管理类
  */
-public class LogUtil {
+public class LogUtilOld {
 
     private static boolean isDebug = BuildConfig.DEBUG;//是否需要打印bug，buildTypes.debug中配置
-
-    public static boolean isDebug() {
-        return isDebug;
-    }
-
-    public static void setDebug(boolean b) {
-        LogUtil.isDebug = b;
-    }
 
     private static final String TAG = "DEBUG";
 
@@ -66,6 +60,16 @@ public class LogUtil {
 
     public static void w(String tag, String msg) {
         w(tag, msg, false);
+
+        AndPermission.with(CommonUtil.getContext())
+                .runtime()
+                .permission(Permission.WRITE_EXTERNAL_STORAGE)
+                .onGranted((permissions) -> {})
+                .onDenied((permissions) -> {
+//                    if (AndPermission.hasAlwaysDeniedPermission(mContext, permissions)) {
+//                        PermissionUtils.showSettingDialog(mContext, permissions);//自定义弹窗 去设置界面
+//                    }
+                }).start();
     }
 
     // *********************************下面是传入自定义tag + LineNo********************************//

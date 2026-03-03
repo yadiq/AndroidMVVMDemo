@@ -47,6 +47,16 @@ public class PermissionUtil {
                     PermissionUtils.showSettingDialog(mContext, permissions);//自定义弹窗 去设置界面
                 }
             }).start();*/
+    /*AndPermission.with(mContext)
+                .runtime()
+                .permission(Permission.WRITE_EXTERNAL_STORAGE)
+                .onGranted { permissions -> upload() }
+                .onDenied { permissions ->
+                    if (AndPermission.hasAlwaysDeniedPermission(mContext, permissions)) {
+                        PermissionUtil.showSettingDialog(mContext, permissions)//自定义弹窗 去设置界面
+                    }
+                }
+                .start()*/
 
     /**
      * 弹窗，去设置界面

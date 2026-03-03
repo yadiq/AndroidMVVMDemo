@@ -132,7 +132,7 @@ public class CommonUtil {
     @SuppressLint("MissingPermission")
     public static void killProgress() {
         String packageName = context.getPackageName();
-        LogUtil.d("killProgress: " + packageName);
+        LogUtil.INSTANCE.d("killProgress: " + packageName);
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         try {
             am.killBackgroundProcesses(packageName);
