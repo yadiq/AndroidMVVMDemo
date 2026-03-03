@@ -3,8 +3,11 @@ package com.hqumath.demo.base
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
+import android.util.Log
 import com.hqumath.demo.app.ActivityManager
 import com.hqumath.demo.utils.CommonUtil
+import com.hqumath.demo.utils.LogUtil
+import com.hqumath.demo.utils.LogUtils
 import me.jessyan.autosize.AutoSizeConfig
 import me.jessyan.autosize.onAdaptListener
 import me.jessyan.autosize.utils.ScreenUtils
@@ -25,6 +28,7 @@ class BaseApplication  : Application() {
         super.onCreate()
         //初始化工具类
         CommonUtil.init(this)
+        LogUtils.init(this)
         //生命周期监听回调
         registerActivityLifecycleCallbacks(activityLifecycleCallbacks)
 
