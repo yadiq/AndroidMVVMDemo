@@ -1,5 +1,6 @@
 package com.hqumath.demo.utils;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -63,6 +64,9 @@ public class PermissionUtil {
      */
     public static void showSettingDialog(Activity activity, final List<String> permissions) {
         List<String> permissionNames = Permission.transformText(activity, permissions);
+        if (permissions.contains(Manifest.permission.POST_NOTIFICATIONS)) {
+            permissionNames.add("通知");
+        }
         String message = activity.getString(R.string.permission_always_failed_message, TextUtils.join("\n",
                 permissionNames));
         new AlertDialog.Builder(activity).setCancelable(false)
