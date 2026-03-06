@@ -7,8 +7,6 @@ import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityMainBinding
 import com.hqumath.demo.ui.login.LoginActivity
 import com.hqumath.demo.ui.repos.MyReposActivity
-import com.hqumath.demo.utils.LogUtil
-import com.hqumath.demo.utils.LogUtils
 
 /**
  * ****************************************************************
@@ -37,8 +35,6 @@ class MainActivity : BaseActivity() {
     }
 
     override fun initData() {
-        LogUtils.d("initData", "123")
-        LogUtils.d("initData", "1234", true)
 
     }
 
