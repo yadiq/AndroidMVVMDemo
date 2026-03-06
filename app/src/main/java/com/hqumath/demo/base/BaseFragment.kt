@@ -27,22 +27,25 @@ abstract class BaseFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
-        val rootView = initContentView(inflater, container, savedInstanceState)
+        return initContentView(inflater, container, savedInstanceState)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         //事件监听
         initListener()
         //初始化数据
         initData()
         //页面事件监听的方法，一般用于ViewModel层转到View层的事件注册
         initViewObservable()
-        return rootView
     }
 
     protected abstract fun initContentView(
         inflater: LayoutInflater?,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View
 
     protected abstract fun initListener()
