@@ -46,7 +46,7 @@ android {
         targetCompatibility JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11
+        jvmTarget = '11'
     }
     //配置自定义打包名称
     /*applicationVariants.configureEach {
@@ -91,4 +91,5 @@ dependencies {
     implementation 'io.github.scwang90:refresh-layout-kernel:3.0.0-alpha' //核心必须依赖
     implementation 'io.github.scwang90:refresh-header-classics:3.0.0-alpha' //经典刷新头
 
+    implementation project(':libusbcamera')
 }

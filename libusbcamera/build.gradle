@@ -1,0 +1,38 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.jiangdg.libusbcamera'
+    compileSdk 33
+
+    defaultConfig {
+        minSdk 21
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = '11'
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.7.0' //Kotlin 扩展库
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.google.android.material:material:1.5.0'
+
+    //implementation ("com.github.jiangdongguo.AndroidUSBCamera:libausbc:3.2.7")
+    implementation("com.github.chenyeju295.AndroidUSBCamera:libausbc:3.3.6")
+    implementation("com.github.chenyeju295.AndroidUSBCamera:libuvc:3.3.6")
+}
