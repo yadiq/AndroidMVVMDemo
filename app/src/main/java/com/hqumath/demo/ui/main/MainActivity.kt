@@ -5,8 +5,10 @@ import android.os.Bundle
 import android.view.View
 import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityMainBinding
-import com.hqumath.demo.ui.login.LoginActivity
 import com.hqumath.demo.ui.repos.MyReposActivity
+import com.hqumath.demo.utils.PermissionUtil
+import com.yanzhenjie.permission.AndPermission
+import com.yanzhenjie.permission.runtime.Permission
 
 /**
  * ****************************************************************
@@ -27,8 +29,19 @@ class MainActivity : BaseActivity() {
 
     override fun initListener() {
         binding.btnLogin.setOnClickListener {
-            startActivity(Intent(mContext, CameraTestActivity::class.java))
+            //startActivity(Intent(mContext, CameraTestActivity::class.java))
+            AndPermission.with(mContext)
+                .runtime()
+                .permission(Permission.CAMERA)
+                .onGranted { permissions -> startActivity(Intent(mContext, CameraTestActivity::class.java)) }
+                .onDenied { permissions ->
+                    if (AndPermission.hasAlwaysDeniedPermission(mContext, permissions)) {
+                        PermissionUtil.showSettingDialog(mContext, permissions);//自定义弹窗 去设置界面
+                    }
+                }
+                .start()
         }
+
         binding.btnMyRepos.setOnClickListener {
             startActivity(Intent(mContext, MyReposActivity::class.java))
         }
