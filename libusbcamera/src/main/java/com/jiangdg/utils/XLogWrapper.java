@@ -1,25 +1,7 @@
 package com.jiangdg.utils;
 
 import android.app.Application;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.text.TextUtils;
 import android.util.Log;
-
-import androidx.annotation.NonNull;
-
-import com.elvishew.xlog.LogConfiguration;
-import com.elvishew.xlog.LogLevel;
-import com.elvishew.xlog.XLog;
-import com.elvishew.xlog.flattener.PatternFlattener;
-import com.elvishew.xlog.printer.AndroidPrinter;
-import com.elvishew.xlog.printer.file.FilePrinter;
-import com.elvishew.xlog.printer.file.naming.FileNameGenerator;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 
 /**
  * X Log wrapper
@@ -32,7 +14,7 @@ public class XLogWrapper {
     private static boolean mHasInit;
 
     public static void init(Application application, String folderPath) {
-        AndroidPrinter androidPrinter = new AndroidPrinter(true);
+        /*AndroidPrinter androidPrinter = new AndroidPrinter(true);
         LogConfiguration config = new LogConfiguration.Builder().logLevel(LogLevel.ALL)
                 .tag(TAG)
                 .disableStackTrace().build();
@@ -43,12 +25,12 @@ public class XLogWrapper {
                 .flattener(new MyFlatterer(FLATTERER))
                 .build();
         XLog.init(config, androidPrinter, filePrinter);
-        mHasInit = true;
+        mHasInit = true;*/
     }
 
     public static void v(String tag, String msg) {
         if (mHasInit) {
-            XLog.v( "[" + tag + "]  " +msg);
+            //XLog.v( "[" + tag + "]  " +msg);
             return;
         }
         Log.v(tag,  "" +msg);
@@ -56,7 +38,7 @@ public class XLogWrapper {
 
     public static void i(String tag, String msg) {
         if (mHasInit) {
-            XLog.i( "[" + tag + "]  " +msg);
+            //XLog.i( "[" + tag + "]  " +msg);
             return;
         }
         Log.i(tag,  "" +msg);
@@ -64,7 +46,7 @@ public class XLogWrapper {
 
     public static void d(String tag, String msg) {
         if (mHasInit) {
-            XLog.d( "[" + tag + "]  " +msg);
+            //XLog.d( "[" + tag + "]  " +msg);
             return;
         }
         Log.d(tag,  "" +msg);
@@ -72,7 +54,7 @@ public class XLogWrapper {
 
     public static void w(String tag, String msg) {
         if (mHasInit) {
-            XLog.w( "[" + tag + "]  " +msg);
+            //XLog.w( "[" + tag + "]  " +msg);
             return;
         }
         Log.w(tag,  "" +msg);
@@ -80,7 +62,7 @@ public class XLogWrapper {
 
     public static void w(String tag, String msg, Throwable throwable) {
         if (mHasInit) {
-            XLog.w( "[" + tag + "]  " +msg, throwable);
+            //XLog.w( "[" + tag + "]  " +msg, throwable);
             return;
         }
         Log.w(tag,  msg, throwable);
@@ -88,7 +70,7 @@ public class XLogWrapper {
 
     public static void w(String tag, Throwable throwable) {
         if (mHasInit) {
-            XLog.w("[" + tag, throwable);
+            //XLog.w("[" + tag, throwable);
             return;
         }
         Log.w(tag,"" , throwable);
@@ -96,7 +78,7 @@ public class XLogWrapper {
 
     public static void e(String tag, String msg) {
         if (mHasInit) {
-            XLog.e("[" + tag + "]  " +msg);
+            //XLog.e("[" + tag + "]  " +msg);
             return;
         }
         Log.e(tag,  "" +msg);
@@ -104,13 +86,13 @@ public class XLogWrapper {
 
     public static void e(String tag, String msg, Throwable throwable) {
         if (mHasInit) {
-            XLog.e("[" + tag + "]  " +msg, throwable);
+            //XLog.e("[" + tag + "]  " +msg, throwable);
             return;
         }
         Log.e(tag,  "" +msg, throwable);
     }
 
-    static class MyFileNameGenerator implements FileNameGenerator {
+    /*static class MyFileNameGenerator implements FileNameGenerator {
         private final Context mCtx;
 
         public MyFileNameGenerator(Context context) {
@@ -154,5 +136,5 @@ public class XLogWrapper {
         public MyFlatterer(String pattern) {
             super(pattern);
         }
-    }
+    }*/
 }
