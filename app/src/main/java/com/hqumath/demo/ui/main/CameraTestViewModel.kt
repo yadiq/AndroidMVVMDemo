@@ -71,6 +71,7 @@ class CameraTestViewModel (application: Application) : AndroidViewModel(applicat
     private fun registerMultiCamera() {
         mCameraClient = MultiCameraClient(getApplication(), object : IDeviceConnectCallBack {
             override fun onAttachDev(device: UsbDevice?) { //设备插入
+                LogUtil.d(TAG, "onAttachDev deviceId:${device?.deviceId}")
                 device?.let {
                     if (mCameraMap.containsKey(device.deviceId)) {
                         return
@@ -91,6 +92,7 @@ class CameraTestViewModel (application: Application) : AndroidViewModel(applicat
             }
 
             override fun onDetachDec(device: UsbDevice?) { //设备断开
+                LogUtil.d(TAG, "onDetachDec deviceId:${device?.deviceId}")
                 mCameraMap.remove(device?.deviceId)?.apply {
                     setUsbControlBlock(null)
                 }
@@ -104,6 +106,7 @@ class CameraTestViewModel (application: Application) : AndroidViewModel(applicat
             }
 
             override fun onCancelDev(device: UsbDevice?) {
+                LogUtil.d(TAG, "onCancelDev deviceId:${device?.deviceId}")
                 mRequestPermission.set(false)
                 try {
                     mCurrentCamera?.cancel(true)
@@ -114,6 +117,7 @@ class CameraTestViewModel (application: Application) : AndroidViewModel(applicat
             }
 
             override fun onConnectDev(device: UsbDevice?, ctrlBlock: USBMonitor.UsbControlBlock?) { //设备连接成功
+                LogUtil.d(TAG, "onConnectDev deviceId:${device?.deviceId}")
                 device ?: return
                 ctrlBlock ?: return
                 mCameraMap[device.deviceId]?.apply {
@@ -128,13 +132,14 @@ class CameraTestViewModel (application: Application) : AndroidViewModel(applicat
                     mCurrentCamera = SettableFuture()
                     mCurrentCamera?.set(camera)
                     //openCamera(mCameraView) 打开相机
-                    getCurrentCamera()?.openCamera(this, getCameraRequest())
+                    getCurrentCamera()?.openCamera(mCameraView, getCameraRequest())
                     getCurrentCamera()?.setCameraStateCallBack(cameraStateCallBack)
                     LogUtil.d(TAG, "camera connection. pid: ${device.productId}, vid: ${device.vendorId}")
                 }
             }
 
             override fun onDisConnectDec(device: UsbDevice?, ctrlBlock: USBMonitor.UsbControlBlock?) {
+                LogUtil.d(TAG, "onDisConnectDec deviceId:${device?.deviceId}")
                 //closeCamera() 关闭相机
                 getCurrentCamera()?.closeCamera()
                 mRequestPermission.set(false)
