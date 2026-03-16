@@ -36,7 +36,7 @@ class CameraTestActivity : BaseActivity() {
     }
 
     override fun initViewObservable() {
-        binding.btnGetCameraInfo.setOnClickListener {
+        binding.btnGetDeviceList.setOnClickListener {
             val usbDeviceList: MutableList<UsbDevice>? = viewModel.getDeviceList() //相机列表
             val sb = StringBuilder()
             if (usbDeviceList.isNullOrEmpty()) {
@@ -44,7 +44,7 @@ class CameraTestActivity : BaseActivity() {
             } else {
                 for (index in (0 until usbDeviceList.size)) {
                     val dev = usbDeviceList[index]
-                    val cameraInfo = "相机${index},${dev.productName},${dev.deviceName},${dev.productId}"
+                    val cameraInfo = "设备${index},${dev.productName},${dev.deviceName},${dev.productId}"
                     sb.append(cameraInfo).append("\n")
                     LogUtil.d(usbDeviceList.joinToString())
                 }
@@ -58,6 +58,19 @@ class CameraTestActivity : BaseActivity() {
                     sb.append(curDeviceInfo).append("\n")
                 }
             }*/
+        }
+        binding.btnGetPreviewSize.setOnClickListener {
+            val sizes = viewModel.getCurrentCamera()?.getAllPreviewSizes()
+            val sb = StringBuilder()
+            if (sizes.isNullOrEmpty()) {
+                sb.append("Get PreviewSize failed")
+            } else {
+                for (index in (0 until sizes.size)) {
+                    sb.append("${sizes[index].width}x${sizes[index].height}").append("\n")
+                    LogUtil.d(sizes.joinToString())
+                }
+            }
+            binding.tvInfo.text = sb.toString()
         }
     }
 

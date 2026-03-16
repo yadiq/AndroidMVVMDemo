@@ -16,30 +16,28 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/btnGetCameraInfo"
+        android:id="@+id/btnGetDeviceList"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="GetCameraInfo"
+        android:text="GetDeviceList"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/tvInfo"
-        android:layout_width="0dp"
-        android:textColor="@color/white"
-        tools:text="123"
+    <Button
+        android:id="@+id/btnGetPreviewSize"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/btnGetCameraInfo"
+        android:layout_marginStart="10dp"
+        android:text="GetPreviewSize"
+        app:layout_constraintStart_toEndOf="@+id/btnGetDeviceList"
         app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/btnGetCameraInfo"
+        app:layout_constraintTop_toBottomOf="@+id/btnGetDeviceList"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:gravity="center"
         android:orientation="horizontal">
 
         <com.google.android.material.button.MaterialButton
@@ -66,5 +64,16 @@
             app:cornerRadius="28dp" />
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvInfo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:textColor="@color/white"
+        tools:text="123"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

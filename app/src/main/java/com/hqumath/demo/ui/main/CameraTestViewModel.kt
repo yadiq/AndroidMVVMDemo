@@ -189,7 +189,7 @@ class CameraTestViewModel (application: Application) : AndroidViewModel(applicat
      *
      * @return current camera, see [MultiCameraClient.ICamera]
      */
-    protected fun getCurrentCamera(): MultiCameraClient.ICamera? {
+    fun getCurrentCamera(): MultiCameraClient.ICamera? {
         return try {
             mCurrentCamera?.get(2, TimeUnit.SECONDS)
         } catch (e: Exception) {
