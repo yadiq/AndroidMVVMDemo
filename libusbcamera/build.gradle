@@ -4,12 +4,15 @@ plugins {
 }
 
 android {
-    namespace 'com.jiangdg.libusbcamera'
+    namespace 'com.jiangdg.ausbc'
     compileSdk 33
 
     defaultConfig {
         minSdk 21
         consumerProguardFiles "consumer-rules.pro"
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
     }
 
     buildTypes {
@@ -33,6 +36,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.5.0'
 
     //implementation ("com.github.jiangdongguo.AndroidUSBCamera:libausbc:3.2.7")
-    api("com.github.chenyeju295.AndroidUSBCamera:libausbc:3.3.6")
-    api("com.github.chenyeju295.AndroidUSBCamera:libuvc:3.3.6")
+    //api("com.github.chenyeju295.AndroidUSBCamera:libausbc:3.3.6")
+    //api("com.github.chenyeju295.AndroidUSBCamera:libuvc:3.3.6")
+    //api 'com.elvishew:xlog:1.11.0'
+
 }
