@@ -36,9 +36,6 @@ class CameraTestActivity : BaseActivity() {
 
         viewModel.setCameraStateCallBack(cameraStateCallBack)
         viewModel.initCameraView(binding.cameraViewContainer)
-
-        //相机信息-获取usb相机列表
-        //相机预览-切换usb相机
     }
 
     override fun initViewObservable() {
@@ -46,7 +43,7 @@ class CameraTestActivity : BaseActivity() {
             val usbDeviceList: MutableList<UsbDevice>? = viewModel.getDeviceList()
             val sb = StringBuilder()
             if (usbDeviceList.isNullOrEmpty()) {
-                sb.append("Get usb device failed")
+                sb.append("usb device is empty")
             } else {
                 // 当前设备
                 val curDeviceId = viewModel.getCurrentCamera()?.getUsbDevice()?.deviceId
