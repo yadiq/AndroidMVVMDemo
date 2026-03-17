@@ -26,12 +26,12 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class CameraTestViewModel (application: Application) : AndroidViewModel(application) {
     companion object {
-        private const val TAG = "CameraFragment"
+        const val TAG = "CameraFragment"
     }
 
     private var mCameraView: IAspectRatio? = null
     private var mCameraClient: MultiCameraClient? = null
-    private val mCameraMap = hashMapOf<Int, MultiCameraClient.ICamera>() //缓存相机
+    val mCameraMap = linkedMapOf<Int, MultiCameraClient.ICamera>() //缓存相机 hashMapOf
     private var mCurrentCamera: SettableFuture<MultiCameraClient.ICamera>? = null
     private var cameraStateCallBack: ICameraStateCallBack? = null
 
@@ -67,12 +67,12 @@ class CameraTestViewModel (application: Application) : AndroidViewModel(applicat
     private fun registerMultiCamera() {
         mCameraClient = MultiCameraClient(getApplication(), object : IDeviceConnectCallBack {
             override fun onAttachDev(device: UsbDevice?) { //设备插入
-                LogUtil.d(TAG, "onAttachDev deviceId:${device?.deviceId}")
                 device?.let {
                     if (mCameraMap.containsKey(device.deviceId)) {
                         return
                     }
                     mCameraMap[device.deviceId] = CameraUVC(getApplication(), device)
+                    LogUtil.d(TAG, "onAttachDev deviceId:${device.deviceId}")
                     if (mRequestPermission.get()) { //检测到设备插入时，发起权限请求
                         return@let
                     }
@@ -130,7 +130,7 @@ class CameraTestViewModel (application: Application) : AndroidViewModel(applicat
                     //openCamera(mCameraView) 打开相机
                     getCurrentCamera()?.openCamera(mCameraView, getCameraRequest())
                     getCurrentCamera()?.setCameraStateCallBack(cameraStateCallBack)
-                    LogUtil.d(TAG, "camera connection. pid: ${device.productId}, vid: ${device.vendorId}")
+                    //LogUtil.d(TAG, "camera connection. pid: ${device.productId}, vid: ${device.vendorId}")
                 }
             }
 
@@ -203,7 +203,7 @@ class CameraTestViewModel (application: Application) : AndroidViewModel(applicat
      *
      * @param device see [UsbDevice]
      */
-    private fun requestPermission(device: UsbDevice?) {
+    fun requestPermission(device: UsbDevice?) {
         mRequestPermission.set(true)
         mCameraClient?.requestPermission(device)
     }

@@ -6,6 +6,7 @@ import android.view.View
 import androidx.lifecycle.ViewModelProvider
 import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityCameraTestBinding
+import com.hqumath.demo.ui.main.CameraTestViewModel.Companion.TAG
 import com.hqumath.demo.utils.LogUtil
 import com.jiangdg.ausbc.MultiCameraClient
 import com.jiangdg.ausbc.callback.ICameraStateCallBack
@@ -35,8 +36,8 @@ class CameraTestActivity : BaseActivity() {
     }
 
     override fun initViewObservable() {
-        binding.btnGetDeviceList.setOnClickListener {
-            val usbDeviceList: MutableList<UsbDevice>? = viewModel.getDeviceList() //相机列表
+        binding.btnGetDeviceList.setOnClickListener { //usb设备
+            val usbDeviceList: MutableList<UsbDevice>? = viewModel.getDeviceList()
             val sb = StringBuilder()
             if (usbDeviceList.isNullOrEmpty()) {
                 sb.append("Get usb device failed")
@@ -59,27 +60,30 @@ class CameraTestActivity : BaseActivity() {
                 }
             }
             binding.tvInfo.text = sb.toString()
-            /*viewModel.getCurrentCamera()?.let { strategy ->
-                if (strategy is CameraUVC) {
-                    val curDevice = strategy.getUsbDevice()
-                    val curDeviceInfo =
-                        "当前:${curDevice.productName},${curDevice.deviceName},${curDevice.productId}"
-                    sb.append(curDeviceInfo).append("\n")
-                }
-            }*/
+            // 当前相机 viewModel.getCurrentCamera().getUsbDevice()
         }
-        binding.btnGetPreviewSize.setOnClickListener {
+        binding.btnGetPreviewSize.setOnClickListener { //分辨率列表
             val sizes = viewModel.getCurrentCamera()?.getAllPreviewSizes()
             val sb = StringBuilder()
             if (sizes.isNullOrEmpty()) {
                 sb.append("Get PreviewSize failed")
             } else {
                 for (index in (0 until sizes.size)) {
-                    sb.append("${sizes[index].width}x${sizes[index].height}").append("\n")
-                    LogUtil.d(sizes.joinToString())
+                    val sizeInfo = "${sizes[index].width}x${sizes[index].height}"
+                    sb.append(sizeInfo).append("\n")
+                    LogUtil.d("分辨率信息:$sizeInfo")
                 }
             }
             binding.tvInfo.text = sb.toString()
+        }
+        binding.btnCamera0.setOnClickListener { //切换摄像头
+            switchCamera(0)
+        }
+        binding.btnCamera1.setOnClickListener { //切换摄像头
+            switchCamera(1)
+        }
+        binding.btnCamera2.setOnClickListener { //切换摄像头
+            switchCamera(2)
         }
     }
 
@@ -98,6 +102,25 @@ class CameraTestActivity : BaseActivity() {
                     //handleCameraError(msg)
             }
         }
+    }
+
+    /**
+     * 切换摄像头
+     */
+    private fun switchCamera(index: Int) {
+        if (viewModel.mCameraMap.size <= index)
+            return
+        var camera = viewModel.mCameraMap.entries.elementAt(index)
+
+        LogUtil.d(TAG, "closeCamera")
+        viewModel.getCurrentCamera()?.closeCamera() //有延迟，不能保证释放完成。阻塞现场，等onDisConnectDec
+        try {
+            Thread.sleep(1000)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        LogUtil.d(TAG, "requestPermission")
+        viewModel.requestPermission(camera.value.getUsbDevice())
     }
 
 }
