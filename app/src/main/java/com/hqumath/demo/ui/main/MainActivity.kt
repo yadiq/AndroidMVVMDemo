@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.View
 import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityMainBinding
-import com.hqumath.demo.ui.repos.MyReposActivity
 import com.hqumath.demo.utils.PermissionUtil
 import com.yanzhenjie.permission.AndPermission
 import com.yanzhenjie.permission.runtime.Permission
@@ -43,14 +42,31 @@ class MainActivity : BaseActivity() {
         }
 
         binding.btnMyRepos.setOnClickListener {
-            startActivity(Intent(mContext, MyReposActivity::class.java))
+            //startActivity(Intent(mContext, MyReposActivity::class.java))
+            //开启线程，定时拍照
+//            lifecycleScope.launch(Dispatchers.IO) { //协程和生命周期能绑定
+//                repeatOnLifecycle(Lifecycle.State.CREATED) { //onCreate()后启动 -> onDestroy()时取消
+//                    delay(10_000L) //
+//                    while (isActive) { //协程作用域取消时自动退出
+////                    Constant.monitorService?.quickCamera(0)
+////                    Constant.monitorService?.quickCamera(1)
+//                        delay(10_000L)
+//                    }
+//                }
+//            }
+            UVCCameraTool.quickCamera(0, binding.textureView)
         }
     }
 
     override fun initData() {
-
+        UVCCameraTool.init()
     }
 
     override fun initViewObservable() {
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        UVCCameraTool.release()
     }
 }

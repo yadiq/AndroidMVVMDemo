@@ -264,7 +264,7 @@ class CameraTestViewModel (application: Application) : AndroidViewModel(applicat
     fun isCameraOpened() = getCurrentCamera()?.isCameraOpened()  ?: false
 
     /**
-     * TODO 参数
+     * 相机参数
      */
     private fun getCameraRequest(): CameraRequest {
         return CameraRequest.Builder()
