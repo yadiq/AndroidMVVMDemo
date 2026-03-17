@@ -32,7 +32,7 @@ class MainActivity : BaseActivity() {
             //startActivity(Intent(mContext, CameraTestActivity::class.java))
             AndPermission.with(mContext)
                 .runtime()
-                .permission(Permission.CAMERA)
+                .permission(Permission.CAMERA, Permission.WRITE_EXTERNAL_STORAGE)
                 .onGranted { permissions -> startActivity(Intent(mContext, CameraTestActivity::class.java)) }
                 .onDenied { permissions ->
                     if (AndPermission.hasAlwaysDeniedPermission(mContext, permissions)) {

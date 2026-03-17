@@ -76,7 +76,7 @@ class CameraTestViewModel (application: Application) : AndroidViewModel(applicat
                     if (mRequestPermission.get()) { //检测到设备插入时，发起权限请求
                         return@let
                     }
-                    /*getDefaultCamera()?.apply { //打开指定的摄像头 TODO
+                    /*getDefaultCamera()?.apply { //打开指定的摄像头
                         if (vendorId == device.vendorId && productId == device.productId) {
                             Logger.i(TAG, "default camera pid: $productId, vid: $vendorId")
                             requestPermission(device)
@@ -257,19 +257,26 @@ class CameraTestViewModel (application: Application) : AndroidViewModel(applicat
     private fun getGravity() = Gravity.CENTER
 
     /**
+     * Is camera opened
+     *
+     * @return camera open status
+     */
+    fun isCameraOpened() = getCurrentCamera()?.isCameraOpened()  ?: false
+
+    /**
      * TODO 参数
      */
     private fun getCameraRequest(): CameraRequest {
         return CameraRequest.Builder()
-            .setPreviewWidth(640)
-            .setPreviewHeight(480)
-            .setRenderMode(CameraRequest.RenderMode.OPENGL)
-            .setDefaultRotateType(RotateType.ANGLE_0)
-            .setAudioSource(CameraRequest.AudioSource.SOURCE_SYS_MIC)
-            .setPreviewFormat(CameraRequest.PreviewFormat.FORMAT_MJPEG)
-            .setAspectRatioShow(true)
-            .setCaptureRawImage(false)
-            .setRawPreviewData(false)
+            .setPreviewWidth(1280) //预览/拍照 分辨率，默认 640x480
+            .setPreviewHeight(720)
+            .setRenderMode(CameraRequest.RenderMode.NORMAL) //渲染模式 OPENGL
+            .setDefaultRotateType(RotateType.ANGLE_0) //opengl模式下旋转相机图像
+            .setAudioSource(CameraRequest.AudioSource.NONE) //录音源
+            .setPreviewFormat(CameraRequest.PreviewFormat.FORMAT_MJPEG) //预览格式
+            .setAspectRatioShow(true) //设置宽高比显示
+            .setCaptureRawImage(false) //opengl模式下捕获原始图像
+            .setRawPreviewData(false) //opengl模式下预览原始图像
             .create()
     }
 
