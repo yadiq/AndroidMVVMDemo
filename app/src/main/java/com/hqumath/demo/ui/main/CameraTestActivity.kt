@@ -9,7 +9,6 @@ import com.hqumath.demo.databinding.ActivityCameraTestBinding
 import com.hqumath.demo.utils.LogUtil
 import com.jiangdg.ausbc.MultiCameraClient
 import com.jiangdg.ausbc.callback.ICameraStateCallBack
-import com.jiangdg.ausbc.camera.CameraUVC
 
 class CameraTestActivity : BaseActivity() {
     private lateinit var binding: ActivityCameraTestBinding
@@ -44,9 +43,19 @@ class CameraTestActivity : BaseActivity() {
             } else {
                 for (index in (0 until usbDeviceList.size)) {
                     val dev = usbDeviceList[index]
-                    val cameraInfo = "设备${index},${dev.productName},${dev.deviceName},${dev.productId}"
+                    var serialNumber: String? = ""
+                    try {
+                        serialNumber = dev.serialNumber //海康摄像头 44434000_P030C01_SN0002; 老usb摄像头 null
+                    } catch (e: Exception) {
+                        //e.printStackTrace()
+                        LogUtil.d("设备信息异常:$e")
+                    }
+                    val cameraInfo = "设备${index},厂商ID:${dev.vendorId},产品ID:${dev.productId}" + //设备标识信息 VID PID
+                            ",主类别:${dev.deviceClass},子类别:${dev.deviceSubclass},协议:${dev.deviceProtocol}" + //设备主类别 1:音频设备 3:HID(键盘鼠标) 6:相机(老标准) 8:存储设备 14:摄像头(UVC) 239:杂项
+                            ",系统路径:${dev.deviceName},系统分配ID:${dev.deviceId},序列号:$serialNumber" + //每次插拔都会变化
+                            ",厂商名称:${dev.manufacturerName},产品名称:${dev.productName}" //,版本:${dev.version} 限制api版本
                     sb.append(cameraInfo).append("\n")
-                    LogUtil.d(usbDeviceList.joinToString())
+                    LogUtil.d("设备信息:$cameraInfo")
                 }
             }
             binding.tvInfo.text = sb.toString()
