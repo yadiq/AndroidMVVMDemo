@@ -3,11 +3,18 @@ package com.hqumath.demo.ui.main
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityMainBinding
 import com.hqumath.demo.utils.PermissionUtil
 import com.yanzhenjie.permission.AndPermission
 import com.yanzhenjie.permission.runtime.Permission
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 /**
  * ****************************************************************
@@ -44,17 +51,16 @@ class MainActivity : BaseActivity() {
         binding.btnMyRepos.setOnClickListener {
             //startActivity(Intent(mContext, MyReposActivity::class.java))
             //开启线程，定时拍照
-//            lifecycleScope.launch(Dispatchers.IO) { //协程和生命周期能绑定
-//                repeatOnLifecycle(Lifecycle.State.CREATED) { //onCreate()后启动 -> onDestroy()时取消
-//                    delay(10_000L) //
-//                    while (isActive) { //协程作用域取消时自动退出
-////                    Constant.monitorService?.quickCamera(0)
-////                    Constant.monitorService?.quickCamera(1)
-//                        delay(10_000L)
-//                    }
-//                }
-//            }
-            UVCCameraTool.quickCamera(0, binding.textureView)
+            lifecycleScope.launch(Dispatchers.IO) { //协程和生命周期能绑定
+                repeatOnLifecycle(Lifecycle.State.CREATED) { //onCreate()后启动 -> onDestroy()时取消
+                    delay(10_000L) //
+                    while (isActive) { //协程作用域取消时自动退出
+                        UVCCameraTool.quickCamera(0, binding.textureView)
+//                        UVCCameraTool.quickCamera(1, binding.textureView)
+                        delay(10_000L)
+                    }
+                }
+            }
         }
     }
 
