@@ -47,7 +47,7 @@ class CameraTestActivity : BaseActivity() {
             } else {
                 // 当前设备
                 val curDeviceId = viewModel.getCurrentCamera()?.getUsbDevice()?.deviceId
-                sb.append("当前设备:$curDeviceId").append("\n")
+                sb.append("当前设备(主类别为14或239):$curDeviceId").append("\n")
                 // 全部设备
                 for (index in (0 until usbDeviceList.size)) {
                     val dev = usbDeviceList[index]
@@ -58,11 +58,11 @@ class CameraTestActivity : BaseActivity() {
                         //e.printStackTrace()
                         LogUtil.d("设备信息异常:$e")
                     }
-                    val cameraInfo = "设备${index},厂商ID:${dev.vendorId},产品ID:${dev.productId}" + //设备标识信息 VID PID
+                    val cameraInfo = "厂商ID:${dev.vendorId},产品ID:${dev.productId}" + //设备标识信息 VID PID
                             ",主类别:${dev.deviceClass},子类别:${dev.deviceSubclass},协议:${dev.deviceProtocol}" + //设备主类别 1:音频设备 3:HID(键盘鼠标) 6:相机(老标准) 8:存储设备 14:摄像头(UVC) 239:杂项
                             ",系统路径:${dev.deviceName},系统ID:${dev.deviceId},序列号:$serialNumber" + //每次插拔都会变化
                             ",厂商名称:${dev.manufacturerName},产品名称:${dev.productName}" //,版本:${dev.version} 限制api版本
-                    sb.append(cameraInfo).append("\n")
+                    sb.append(cameraInfo).append("\n\n")
                     LogUtil.d("设备信息:$cameraInfo")
                 }
             }
