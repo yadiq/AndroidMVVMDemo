@@ -3,50 +3,29 @@ package com.hqumath.demo.ui.main
 import android.hardware.usb.UsbDevice
 import android.os.Bundle
 import android.view.View
-import androidx.lifecycle.ViewModelProvider
 import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityCameraTestBinding
-import com.hqumath.demo.ui.main.CameraTestViewModel.Companion.TAG
-import com.hqumath.demo.utils.CommonUtil
-import com.hqumath.demo.utils.FileUtil
+import com.hqumath.demo.ui.main.CameraTestViewModelOld.Companion.TAG
 import com.hqumath.demo.utils.LogUtil
-import com.jiangdg.ausbc.MultiCameraClient
-import com.jiangdg.ausbc.callback.ICameraStateCallBack
-import com.jiangdg.ausbc.callback.ICaptureCallBack
-import java.text.SimpleDateFormat
-import java.util.Date
+import kotlin.concurrent.thread
 
 class CameraTestActivity : BaseActivity() {
     private lateinit var binding: ActivityCameraTestBinding
-    private lateinit var viewModel: CameraTestViewModel
-    private val sdf = SimpleDateFormat("yyyyMMdd_HHmmss")
 
     override fun initContentView(savedInstanceState: Bundle?): View {
-        //enableEdgeToEdge() 启用沉浸式布局
         binding = ActivityCameraTestBinding.inflate(layoutInflater)
         return binding.root
     }
 
     override fun initListener() {
-
-    }
-
-    override fun initData() {
-        viewModel = ViewModelProvider(this)[CameraTestViewModel::class.java]
-
-        viewModel.setCameraStateCallBack(cameraStateCallBack)
-        viewModel.initCameraView(binding.cameraViewContainer)
-    }
-
-    override fun initViewObservable() {
         binding.btnGetDeviceList.setOnClickListener { //usb设备
-            val usbDeviceList: MutableList<UsbDevice>? = viewModel.getDeviceList()
+            val usbDeviceList: MutableList<UsbDevice>? = UVCCameraTool.getDeviceList()
             val sb = StringBuilder()
             if (usbDeviceList.isNullOrEmpty()) {
                 sb.append("usb device is empty")
             } else {
                 // 当前设备
-                val curDeviceId = viewModel.getCurrentCamera()?.getUsbDevice()?.deviceId
+                val curDeviceId = UVCCameraTool.getCurrentCamera()?.getUsbDevice()?.deviceId
                 sb.append("当前设备(主类别为14或239):$curDeviceId").append("\n")
                 // 全部设备
                 for (index in (0 until usbDeviceList.size)) {
@@ -58,9 +37,9 @@ class CameraTestActivity : BaseActivity() {
                         //e.printStackTrace()
                         LogUtil.d("设备信息异常:$e")
                     }
-                    val cameraInfo = "厂商ID:${dev.vendorId},产品ID:${dev.productId}" + //设备标识信息 VID PID
+                    val cameraInfo = "系统ID:${dev.deviceId},厂商ID:${dev.vendorId},产品ID:${dev.productId}" + //设备标识信息 VID PID
                             ",主类别:${dev.deviceClass},子类别:${dev.deviceSubclass},协议:${dev.deviceProtocol}" + //设备主类别 1:音频设备 3:HID(键盘鼠标) 6:相机(老标准) 8:存储设备 14:摄像头(UVC) 239:杂项
-                            ",系统路径:${dev.deviceName},系统ID:${dev.deviceId},序列号:$serialNumber" + //每次插拔都会变化
+                            ",系统路径:${dev.deviceName},序列号:$serialNumber" + //每次插拔都会变化
                             ",厂商名称:${dev.manufacturerName},产品名称:${dev.productName}" //,版本:${dev.version} 限制api版本
                     sb.append(cameraInfo).append("\n\n")
                     LogUtil.d("设备信息:$cameraInfo")
@@ -69,13 +48,13 @@ class CameraTestActivity : BaseActivity() {
             binding.tvInfo.text = sb.toString()
         }
         binding.btnGetPreviewSize.setOnClickListener { //分辨率列表
-            val sizes = viewModel.getCurrentCamera()?.getAllPreviewSizes()
+            val sizes = UVCCameraTool.getCurrentCamera()?.getAllPreviewSizes()
             val sb = StringBuilder()
             if (sizes.isNullOrEmpty()) {
                 sb.append("Get PreviewSize failed")
             } else {
                 // 当前分辨率
-                val curCameraRequest = viewModel.getCurrentCamera()?.getCameraRequest()
+                val curCameraRequest = UVCCameraTool.getCurrentCamera()?.getCameraRequest()
                 sb.append("当前分辨率:${curCameraRequest?.previewWidth}x${curCameraRequest?.previewHeight}").append("\n")
                 // 全部分辨率
                 for (index in (0 until sizes.size)) {
@@ -95,44 +74,24 @@ class CameraTestActivity : BaseActivity() {
         binding.btnCamera2.setOnClickListener { //切换摄像头
             switchCamera(2)
         }
-        binding.btnCaptureImage.setOnClickListener {
-            if (!viewModel.isCameraOpened()) {
-                CommonUtil.toast("camera not worked!")
-                return@setOnClickListener
-            }
-            val fileName = sdf.format(Date()) + ".jpg"
-            val filePath = FileUtil.getExternalFile("picture", fileName).absolutePath
-            viewModel.getCurrentCamera()?.captureImage(object: ICaptureCallBack {
-                override fun onBegin() {
-                }
-
-                override fun onError(error: String?) {
-                    CommonUtil.toast(error ?: "未知异常")
-                    LogUtil.d("拍照异常 ${error ?: "未知异常"}")
-                }
-
-                override fun onComplete(path: String?) {
-                    CommonUtil.toast("拍照完成")
-                    LogUtil.d("拍照完成 $path")
-                }
-            }, filePath)
-        }
     }
 
-    private var cameraStateCallBack: ICameraStateCallBack = object : ICameraStateCallBack {
-        override fun onCameraState(
-            self: MultiCameraClient.ICamera,
-            code: ICameraStateCallBack.State,
-            msg: String?,
-        ) {
-            when (code) {
-                ICameraStateCallBack.State.OPENED -> {}
-                    //handleCameraOpened() 更新UI 显示帧率
-                ICameraStateCallBack.State.CLOSED -> {}
-                    //handleCameraClosed()
-                ICameraStateCallBack.State.ERROR -> {}
-                    //handleCameraError(msg)
-            }
+    override fun initData() {
+       //打开摄像头
+        UVCCameraTool.setQuickCameraMode(false)
+        UVCCameraTool.openCameraPreview(0, binding.textureView)
+    }
+
+    override fun initViewObservable() {
+
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        //关闭摄像头
+        thread {
+            UVCCameraTool.closeCamera(true)
+            UVCCameraTool.setQuickCameraMode(true)
         }
     }
 
@@ -140,19 +99,9 @@ class CameraTestActivity : BaseActivity() {
      * 切换摄像头
      */
     private fun switchCamera(index: Int) {
-        if (viewModel.mCameraMap.size <= index)
-            return
-        var camera = viewModel.mCameraMap.entries.elementAt(index)
-
-        LogUtil.d(TAG, "closeCamera")
-        viewModel.getCurrentCamera()?.closeCamera() //有延迟，不能保证释放完成。阻塞现场，等onDisConnectDec
-        try {
-            Thread.sleep(1000)
-        } catch (e: Exception) {
-            e.printStackTrace()
+        thread {
+            UVCCameraTool.closeCamera(true)
+            UVCCameraTool.openCameraPreview(index, binding.textureView)
         }
-        LogUtil.d(TAG, "requestPermission")
-        viewModel.requestPermission(camera.value.getUsbDevice())
     }
-
 }

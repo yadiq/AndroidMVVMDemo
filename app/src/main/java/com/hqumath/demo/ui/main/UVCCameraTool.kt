@@ -27,6 +27,7 @@ object UVCCameraTool {
 
     private var captureFilePath = "" //拍照图片路径
     private val lockCamera = Object() //线程锁
+    private var isQuickCameraMode = true //是否抓拍模式
 
     fun init() {
         registerMultiCamera()
@@ -36,15 +37,28 @@ object UVCCameraTool {
         unRegisterMultiCamera()
     }
 
-    fun getCameraSize(): Int {
-        return mCameraMap.size
+    /**
+     * 相机数量
+     */
+    fun getCameraSize() = mCameraMap.size
+
+    fun setQuickCameraMode(isQuickCameraMode: Boolean) {
+        this.isQuickCameraMode = isQuickCameraMode
     }
+
+    fun getDeviceList() = mCameraClient?.getDeviceList()
+
+    fun getCurrentCamera() = mCurrentCamera
 
     /**
      * 抓拍
      * 请求权限-设备连接成功-打开相机-拍照-关闭相机-设备断开连接
      */
     fun quickCamera(index: Int, textureView: IAspectRatio): String {
+        if (!isQuickCameraMode) {
+            LogUtil.d(TAG, "quickCamera 非抓拍模式")
+            return ""
+        }
         LogUtil.d(TAG, "quickCamera size=${mCameraMap.size} select=$index")
         captureFilePath = ""
         if (mCameraMap.size <= index) {
@@ -66,6 +80,22 @@ object UVCCameraTool {
             }
         }
         return captureFilePath
+    }
+
+    /**
+     * 预览
+     * 请求权限-设备连接成功-打开相机
+     */
+    fun openCameraPreview(index: Int, textureView: IAspectRatio) {
+        LogUtil.d(TAG, "openCameraPreview size=${mCameraMap.size} select=$index")
+        if (mCameraMap.size <= index) {
+            return
+        }
+        var camera = mCameraMap.entries.elementAt(index)
+        //更新View
+        mCameraView = textureView
+        //请求权限
+        mCameraClient?.requestPermission(camera.value.getUsbDevice())
     }
 
     private fun registerMultiCamera() {
@@ -112,7 +142,7 @@ object UVCCameraTool {
                 ctrlBlock: USBMonitor.UsbControlBlock?,
             ) { //关闭摄像头后，设备连接断开时执行
                 LogUtil.d(TAG, "onDisConnectDec deviceId:${device?.deviceId}")
-                closeCamera() //关闭相机
+                closeCamera(false) //关闭相机
             }
         })
         mCameraClient?.register()
@@ -144,7 +174,9 @@ object UVCCameraTool {
                 when (code) {
                     ICameraStateCallBack.State.OPENED -> {
                         LogUtil.d(TAG, "openCamera success, start captureImage")
-                        captureImage() //拍照
+                        if (isQuickCameraMode) { //抓拍模式
+                            captureImage() //拍照
+                        }
                     }
 
                     ICameraStateCallBack.State.CLOSED -> {
@@ -168,9 +200,19 @@ object UVCCameraTool {
         })
     }
 
-    private fun closeCamera() {
+    fun closeCamera(withLock: Boolean) {
         mCurrentCamera?.closeCamera() //关闭相机
         mCurrentCamera = null
+        if (withLock) {
+            //任务未执行完成，需要阻塞线程
+            synchronized(lockCamera) {
+                try {
+                    lockCamera.wait()
+                } catch (e: InterruptedException) {
+                    e.printStackTrace()
+                }
+            }
+        }
     }
 
     private fun captureImage() {
@@ -183,14 +225,14 @@ object UVCCameraTool {
             override fun onError(error: String?) {
                 //CommonUtil.toast(error ?: "未知异常")
                 LogUtil.d(TAG, "captureImage error, msg=$error")
-                closeCamera() //关闭相机
+                closeCamera(false) //关闭相机
             }
 
             override fun onComplete(path: String?) {
                 CommonUtil.toast("拍照完成")
                 LogUtil.d(TAG, "captureImage success, path=$path")
                 captureFilePath = path ?: ""
-                closeCamera() //关闭相机
+                closeCamera(false) //关闭相机
             }
         }, filePath)
     }

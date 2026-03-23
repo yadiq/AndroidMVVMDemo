@@ -24,7 +24,7 @@ import com.jiangdg.usb.USBMonitor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
-class CameraTestViewModel (application: Application) : AndroidViewModel(application) {
+class CameraTestViewModelOld (application: Application) : AndroidViewModel(application) {
     companion object {
         const val TAG = "CameraFragment"
     }
