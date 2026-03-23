@@ -20,10 +20,13 @@ object UVCCameraTool {
     private val TAG = "UVCCameraTool"
     private val sdf = SimpleDateFormat("yyyyMMdd_HHmmss")
 
-    private var mCameraView: IAspectRatio? = null
     private var mCameraClient: MultiCameraClient? = null
-    val mCameraMap = linkedMapOf<Int, MultiCameraClient.ICamera>() //缓存相机 hashMapOf
-    private var mCurrentCamera: MultiCameraClient.ICamera? = null
+    private val mCameraMap = linkedMapOf<Int, MultiCameraClient.ICamera>() //相机列表
+    private var mCurrentCamera: MultiCameraClient.ICamera? = null //当前相机
+    private var mCameraView: IAspectRatio? = null //预览view
+
+    private var captureFilePath = "" //拍照图片路径
+    private val lockCamera = Object() //线程锁
 
     fun init() {
         registerMultiCamera()
@@ -33,44 +36,66 @@ object UVCCameraTool {
         unRegisterMultiCamera()
     }
 
-    fun quickCamera(index: Int, textureView: IAspectRatio) {
-        //请求权限-设备连接成功-打开相机(开启预览)-拍照-关闭相机
-        LogUtil.d(TAG, "打开相机 size=${mCameraMap.size} select=$index")
+    fun getCameraSize(): Int {
+        return mCameraMap.size
+    }
+
+    /**
+     * 抓拍
+     * 请求权限-设备连接成功-打开相机-拍照-关闭相机-设备断开连接
+     */
+    fun quickCamera(index: Int, textureView: IAspectRatio): String {
+        LogUtil.d(TAG, "quickCamera size=${mCameraMap.size} select=$index")
+        captureFilePath = ""
         if (mCameraMap.size <= index) {
-            return
+            return captureFilePath
         }
         var camera = mCameraMap.entries.elementAt(index)
         //更新View
         mCameraView = textureView
-        //mCameraView = AspectRatioTextureView(CommonUtil.getContext())
         //请求权限
-        mCameraClient?.requestPermission(camera.value.getUsbDevice())
+        val result = mCameraClient?.requestPermission(camera.value.getUsbDevice())
+        if (result == true) {
+            //任务未执行完成，需要阻塞线程
+            synchronized(lockCamera) {
+                try {
+                    lockCamera.wait()
+                } catch (e: InterruptedException) {
+                    e.printStackTrace()
+                }
+            }
+        }
+        return captureFilePath
     }
 
     private fun registerMultiCamera() {
         mCameraClient = MultiCameraClient(CommonUtil.getContext(), object : IDeviceConnectCallBack {
-            override fun onAttachDev(device: UsbDevice?) { //设备插入
-                device?.let {
-                    if (mCameraMap.containsKey(device.deviceId)) {
-                        return
-                    }
-                    mCameraMap[device.deviceId] = CameraUVC(CommonUtil.getContext(), device)
-                    LogUtil.d(TAG, "onAttachDev deviceId:${device.deviceId}")
+            override fun onAttachDev(device: UsbDevice?) { //设备插入时执行
+                device ?: return
+                if (mCameraMap.containsKey(device.deviceId)) {
+                    return
                 }
+                LogUtil.d(TAG, "onAttachDev deviceId:${device.deviceId}")
+                mCameraMap[device.deviceId] = CameraUVC(CommonUtil.getContext(), device)
             }
 
-            override fun onDetachDec(device: UsbDevice?) { //设备断开
-                LogUtil.d(TAG, "onDetachDec deviceId:${device?.deviceId}")
-                mCameraMap.remove(device?.deviceId)?.apply {
+            override fun onDetachDec(device: UsbDevice?) { //设备拔出时执行
+                device ?: return
+                LogUtil.d(TAG, "onDetachDec deviceId:${device.deviceId}")
+                mCameraMap.remove(device.deviceId)?.apply {
                     setUsbControlBlock(null)
                 }
             }
 
-            override fun onCancelDev(device: UsbDevice?) {
+            override fun onCancelDev(device: UsbDevice?) { //请求权限失败后执行
                 LogUtil.d(TAG, "onCancelDev deviceId:${device?.deviceId}")
+                //唤醒线程
+                synchronized(lockCamera) {
+                    lockCamera.notifyAll()
+                }
             }
 
-            override fun onConnectDev(device: UsbDevice?, ctrlBlock: USBMonitor.UsbControlBlock?) { //设备连接成功
+            override fun onConnectDev(device: UsbDevice?, ctrlBlock: USBMonitor.UsbControlBlock?) { //请求权限成功后，设备连接时执行
                 LogUtil.d(TAG, "onConnectDev deviceId:${device?.deviceId}")
                 device ?: return
                 ctrlBlock ?: return
@@ -82,7 +107,10 @@ object UVCCameraTool {
                 }
             }
 
-            override fun onDisConnectDec(device: UsbDevice?, ctrlBlock: USBMonitor.UsbControlBlock?) {
+            override fun onDisConnectDec(
+                device: UsbDevice?,
+                ctrlBlock: USBMonitor.UsbControlBlock?,
+            ) { //关闭摄像头后，设备连接断开时执行
                 LogUtil.d(TAG, "onDisConnectDec deviceId:${device?.deviceId}")
                 closeCamera() //关闭相机
             }
@@ -98,12 +126,16 @@ object UVCCameraTool {
         mCameraClient?.unRegister()
         mCameraClient?.destroy()
         mCameraClient = null
+        //唤醒线程
+        synchronized(lockCamera) {
+            lockCamera.notifyAll()
+        }
     }
 
     private fun openCamera() {
         LogUtil.d(TAG, "openCamera")
         mCurrentCamera?.openCamera(mCameraView, getCameraRequest())
-        mCurrentCamera?.setCameraStateCallBack(object: ICameraStateCallBack {
+        mCurrentCamera?.setCameraStateCallBack(object : ICameraStateCallBack {
             override fun onCameraState(
                 self: MultiCameraClient.ICamera,
                 code: ICameraStateCallBack.State,
@@ -111,16 +143,25 @@ object UVCCameraTool {
             ) {
                 when (code) {
                     ICameraStateCallBack.State.OPENED -> {
-                        LogUtil.d(TAG, "openCamera OPENED")
-                        //更新UI 显示帧率 可以拍照
-                        //CommonUtil.toast("可以拍照")
+                        LogUtil.d(TAG, "openCamera success, start captureImage")
                         captureImage() //拍照
                     }
-                    //handleCameraOpened()
-                    ICameraStateCallBack.State.CLOSED -> {}
-                    //handleCameraClosed()
-                    ICameraStateCallBack.State.ERROR -> {}
-                    //handleCameraError(msg)
+
+                    ICameraStateCallBack.State.CLOSED -> {
+                        LogUtil.d(TAG, "closeCamera success")
+                        //唤醒线程
+                        synchronized(lockCamera) {
+                            lockCamera.notifyAll()
+                        }
+                    }
+
+                    ICameraStateCallBack.State.ERROR -> {
+                        LogUtil.d(TAG, "openCamera error, msg=$msg")
+                        //唤醒线程
+                        synchronized(lockCamera) {
+                            lockCamera.notifyAll()
+                        }
+                    }
                 }
             }
 
@@ -135,19 +176,20 @@ object UVCCameraTool {
     private fun captureImage() {
         val fileName = sdf.format(Date()) + ".jpg"
         val filePath = FileUtil.getExternalFile("picture", fileName).absolutePath
-        mCurrentCamera?.captureImage(object: ICaptureCallBack {
+        mCurrentCamera?.captureImage(object : ICaptureCallBack {
             override fun onBegin() {
             }
 
             override fun onError(error: String?) {
-                CommonUtil.toast(error ?: "未知异常")
-                LogUtil.d(TAG, "拍照异常 ${error ?: "未知异常"}")
+                //CommonUtil.toast(error ?: "未知异常")
+                LogUtil.d(TAG, "captureImage error, msg=$error")
                 closeCamera() //关闭相机
             }
 
             override fun onComplete(path: String?) {
                 CommonUtil.toast("拍照完成")
-                LogUtil.d(TAG, "拍照完成 $path")
+                LogUtil.d(TAG, "captureImage success, path=$path")
+                captureFilePath = path ?: ""
                 closeCamera() //关闭相机
             }
         }, filePath)

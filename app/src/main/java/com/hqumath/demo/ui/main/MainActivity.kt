@@ -8,6 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.hqumath.demo.base.BaseActivity
 import com.hqumath.demo.databinding.ActivityMainBinding
+import com.hqumath.demo.utils.LogUtil
 import com.hqumath.demo.utils.PermissionUtil
 import com.yanzhenjie.permission.AndPermission
 import com.yanzhenjie.permission.runtime.Permission
@@ -51,14 +52,22 @@ class MainActivity : BaseActivity() {
         binding.btnMyRepos.setOnClickListener {
             //startActivity(Intent(mContext, MyReposActivity::class.java))
             //开启线程，定时拍照
-            lifecycleScope.launch(Dispatchers.IO) { //协程和生命周期能绑定
-                repeatOnLifecycle(Lifecycle.State.CREATED) { //onCreate()后启动 -> onDestroy()时取消
-                    delay(10_000L) //
-                    while (isActive) { //协程作用域取消时自动退出
-                        UVCCameraTool.quickCamera(0, binding.textureView)
-//                        UVCCameraTool.quickCamera(1, binding.textureView)
-                        delay(10_000L)
-                    }
+//            lifecycleScope.launch(Dispatchers.IO) { //协程和生命周期能绑定
+//                repeatOnLifecycle(Lifecycle.State.CREATED) { //onCreate()后启动 -> onDestroy()时取消
+//                    delay(10_000L) //
+//                    while (isActive) { //协程作用域取消时自动退出
+//                        UVCCameraTool.quickCamera(0, binding.textureView)
+////                        UVCCameraTool.quickCamera(1, binding.textureView)
+//                        delay(10_000L)
+//                    }
+//                }
+//            }
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                //遍历所有相机拍照
+                for (index in 0 until UVCCameraTool.getCameraSize()) {
+                    val result1 = UVCCameraTool.quickCamera(index, binding.textureView)
+                    LogUtil.d("UVCCameraTool", "执行完成，result$index=$result1")
                 }
             }
         }

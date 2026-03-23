@@ -32,7 +32,7 @@ class CameraTestViewModel (application: Application) : AndroidViewModel(applicat
     private var mCameraView: IAspectRatio? = null
     private var mCameraClient: MultiCameraClient? = null
     val mCameraMap = linkedMapOf<Int, MultiCameraClient.ICamera>() //缓存相机 hashMapOf
-    private var mCurrentCamera: SettableFuture<MultiCameraClient.ICamera>? = null
+    private var mCurrentCamera: SettableFuture<MultiCameraClient.ICamera>? = null //异步操作时，会阻塞线程
     private var cameraStateCallBack: ICameraStateCallBack? = null
 
     private val mRequestPermission: AtomicBoolean by lazy { //是否在请求usb权限

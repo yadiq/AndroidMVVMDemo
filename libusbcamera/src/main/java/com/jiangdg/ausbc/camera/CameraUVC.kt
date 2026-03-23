@@ -226,7 +226,7 @@ class CameraUVC(ctx: Context, device: UsbDevice) : MultiCameraClient.ICamera(ctx
     }
 
     override fun closeCameraInternal() {
-        postStateEvent(ICameraStateCallBack.State.CLOSED)
+        //postStateEvent(ICameraStateCallBack.State.CLOSED)
         isPreviewed = false
         releaseEncodeProcessor()
         mUvcCamera?.destroy()
@@ -234,6 +234,7 @@ class CameraUVC(ctx: Context, device: UsbDevice) : MultiCameraClient.ICamera(ctx
         if (Utils.debugCamera) {
             Logger.i(TAG, " stop preview, name = ${device.deviceName}")
         }
+        postStateEvent(ICameraStateCallBack.State.CLOSED) //update by gyd 等资源释放后再发通知
     }
 
     override fun captureImageInternal(savePath: String?, callback: ICaptureCallBack) {
