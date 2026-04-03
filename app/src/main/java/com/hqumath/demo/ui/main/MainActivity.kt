@@ -39,12 +39,15 @@ class MainActivity : BaseActivity() {
             //startActivity(Intent(mContext, CameraTestActivity::class.java))
             AndPermission.with(mContext)
                 .runtime()
-                .permission(Permission.CAMERA, Permission.WRITE_EXTERNAL_STORAGE)
-                .onGranted { permissions -> startActivity(Intent(mContext, CameraTestActivity::class.java)) }
+                .permission(Permission.CAMERA, Permission.WRITE_EXTERNAL_STORAGE, Permission.RECORD_AUDIO)
+                .onGranted { permissions ->
+                    startActivity(Intent(mContext, CameraTestActivity::class.java))
+                }
                 .onDenied { permissions ->
-                    if (AndPermission.hasAlwaysDeniedPermission(mContext, permissions)) {
-                        PermissionUtil.showSettingDialog(mContext, permissions);//自定义弹窗 去设置界面
-                    }
+//                    if (AndPermission.hasAlwaysDeniedPermission(mContext, permissions)) {
+//                        PermissionUtil.showSettingDialog(mContext, permissions);//自定义弹窗 去设置界面
+//                    }
+                    startActivity(Intent(mContext, CameraTestActivity::class.java))
                 }
                 .start()
         }

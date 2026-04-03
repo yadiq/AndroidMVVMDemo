@@ -3,7 +3,7 @@
 
     <!--网络权限-->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!--写文件 低版本写入下载目录需要-->
+    <!--写文件-->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <!--相机-->
@@ -11,6 +11,8 @@
     <uses-feature android:name="android.hardware.camera"/>
     <uses-feature android:name="android.hardware.camera.autofocus"/>
 
+    <!--录音-->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
 
     <!--权限获取库-->
