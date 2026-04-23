@@ -176,7 +176,7 @@ class Camera2Activity : BaseActivity() {
         //打印相机列表
         LogUtil.d("相机列表: ${manager.cameraIdList.joinToString()}")
 
-        if (manager.cameraIdList.size >= 0)
+        if (manager.cameraIdList.size == 0)
             return
         val cameraId = manager.cameraIdList.first { //返回第一个 条件为 true 的元素
             manager.getCameraCharacteristics(it).get(CameraCharacteristics.LENS_FACING) == cameraType
